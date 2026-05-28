@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Interview;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,9 +45,10 @@ class InterviewController extends Controller
         return null;
     }
 
-    private function interviewQuery()
+    private function baseQuery()
     {
-        return DB::table('interviews')
+        return Interview::query()
+            ->from('interviews')
             ->join('candidates', 'interviews.candidate_id', '=', 'candidates.id')
             ->join('election_periods', 'interviews.period_id', '=', 'election_periods.id')
             ->leftJoin('users as creators', 'interviews.created_by', '=', 'creators.id')
@@ -90,7 +92,7 @@ class InterviewController extends Controller
             return $this->error('Validasi gagal.', 422, $validator->errors());
         }
 
-        $query = $this->interviewQuery();
+        $query = $this->baseQuery();
 
         if ($request->filled('period_id')) {
             $query->where('interviews.period_id', $request->period_id);
@@ -128,7 +130,12 @@ class InterviewController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'candidate_id' => ['required', 'integer', 'exists:candidates,id'],
+            'candidate_id' => [
+                'required',
+                'integer',
+                'exists:candidates,id',
+                Rule::unique('interviews', 'candidate_id'),
+            ],
             'scheduled_at' => ['required', 'date'],
             'location' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::in(['scheduled', 'completed', 'absent', 'cancelled'])],
@@ -150,41 +157,30 @@ class InterviewController extends Controller
             return $this->error('Calon harus berstatus valid sebelum dijadwalkan wawancara.', 422);
         }
 
-        $alreadyScheduled = DB::table('interviews')
-            ->where('candidate_id', $request->candidate_id)
-            ->exists();
-
-        if ($alreadyScheduled) {
-            return $this->error('Calon ini sudah memiliki jadwal wawancara.', 409);
-        }
-
         try {
-            $now = now();
             $status = $request->input('status', 'scheduled');
 
-            $id = DB::table('interviews')->insertGetId([
+            $interview = Interview::create([
                 'period_id' => $candidate->period_id,
                 'candidate_id' => $candidate->id,
                 'scheduled_at' => $request->scheduled_at,
                 'location' => $request->input('location'),
                 'status' => $status,
                 'created_by' => $request->user()->id,
-                'created_at' => $now,
-                'updated_at' => $now,
             ]);
 
             DB::table('candidates')
                 ->where('id', $candidate->id)
                 ->update([
                     'status' => $this->candidateStatusFromInterviewStatus($status, $candidate->status),
-                    'updated_at' => $now,
+                    'updated_at' => now(),
                 ]);
 
-            $interview = $this->interviewQuery()
-                ->where('interviews.id', $id)
+            $data = $this->baseQuery()
+                ->where('interviews.id', $interview->id)
                 ->first();
 
-            return $this->success($interview, 'Jadwal wawancara berhasil dibuat.', 201);
+            return $this->success($data, 'Jadwal wawancara berhasil dibuat.', 201);
         } catch (Throwable $e) {
             return $this->error('Jadwal wawancara gagal dibuat.', 500, $e->getMessage());
         }
@@ -192,7 +188,7 @@ class InterviewController extends Controller
 
     public function show(string $id): JsonResponse
     {
-        $interview = $this->interviewQuery()
+        $interview = $this->baseQuery()
             ->where('interviews.id', $id)
             ->first();
 
@@ -209,9 +205,7 @@ class InterviewController extends Controller
             return $deny;
         }
 
-        $interview = DB::table('interviews')
-            ->where('id', $id)
-            ->first();
+        $interview = Interview::find($id);
 
         if (!$interview) {
             return $this->error('Jadwal wawancara tidak ditemukan.', 404);
@@ -229,7 +223,6 @@ class InterviewController extends Controller
         }
 
         try {
-            $now = now();
             $candidateId = $request->input('candidate_id', $interview->candidate_id);
             $periodId = $interview->period_id;
 
@@ -246,9 +239,8 @@ class InterviewController extends Controller
                     return $this->error('Calon pengganti harus berstatus valid.', 422);
                 }
 
-                $used = DB::table('interviews')
-                    ->where('candidate_id', $candidateId)
-                    ->where('id', '!=', $id)
+                $used = Interview::where('candidate_id', $candidateId)
+                    ->where('id', '!=', $interview->id)
                     ->exists();
 
                 if ($used) {
@@ -264,7 +256,7 @@ class InterviewController extends Controller
                         ->where('id', $oldCandidate->id)
                         ->update([
                             'status' => 'valid',
-                            'updated_at' => $now,
+                            'updated_at' => now(),
                         ]);
                 }
 
@@ -273,27 +265,15 @@ class InterviewController extends Controller
 
             $status = $request->input('status', $interview->status);
 
-            $data = [
-                'candidate_id' => $candidateId,
+            $interview->update([
                 'period_id' => $periodId,
-                'updated_at' => $now,
-            ];
-
-            if ($request->has('scheduled_at')) {
-                $data['scheduled_at'] = $request->scheduled_at;
-            }
-
-            if ($request->has('location')) {
-                $data['location'] = $request->input('location');
-            }
-
-            if ($request->has('status')) {
-                $data['status'] = $status;
-            }
-
-            DB::table('interviews')
-                ->where('id', $id)
-                ->update($data);
+                'candidate_id' => $candidateId,
+                'scheduled_at' => $request->input('scheduled_at', $interview->scheduled_at),
+                'location' => $request->has('location')
+                    ? $request->input('location')
+                    : $interview->location,
+                'status' => $status,
+            ]);
 
             $candidate = DB::table('candidates')
                 ->where('id', $candidateId)
@@ -304,15 +284,15 @@ class InterviewController extends Controller
                     ->where('id', $candidateId)
                     ->update([
                         'status' => $this->candidateStatusFromInterviewStatus($status, $candidate->status),
-                        'updated_at' => $now,
+                        'updated_at' => now(),
                     ]);
             }
 
-            $updated = $this->interviewQuery()
-                ->where('interviews.id', $id)
+            $data = $this->baseQuery()
+                ->where('interviews.id', $interview->id)
                 ->first();
 
-            return $this->success($updated, 'Jadwal wawancara berhasil diperbarui.');
+            return $this->success($data, 'Jadwal wawancara berhasil diperbarui.');
         } catch (Throwable $e) {
             return $this->error('Jadwal wawancara gagal diperbarui.', 500, $e->getMessage());
         }
@@ -324,9 +304,7 @@ class InterviewController extends Controller
             return $deny;
         }
 
-        $interview = DB::table('interviews')
-            ->where('id', $id)
-            ->first();
+        $interview = Interview::find($id);
 
         if (!$interview) {
             return $this->error('Jadwal wawancara tidak ditemukan.', 404);
@@ -337,9 +315,7 @@ class InterviewController extends Controller
                 ->where('id', $interview->candidate_id)
                 ->first();
 
-            DB::table('interviews')
-                ->where('id', $id)
-                ->delete();
+            $interview->delete();
 
             if ($candidate && in_array($candidate->status, ['interview_scheduled', 'interviewed'], true)) {
                 DB::table('candidates')

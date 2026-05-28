@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Criterion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,10 +45,31 @@ class CriterionController extends Controller
         return null;
     }
 
+    private function baseQuery(Request $request)
+    {
+        $query = Criterion::query()
+            ->from('criteria')
+            ->join('election_periods', 'criteria.period_id', '=', 'election_periods.id')
+            ->select(
+                'criteria.*',
+                'election_periods.election_year',
+                'election_periods.status as period_status'
+            );
+
+        if ($request->user() && $request->user()->role === 'juri') {
+            $query->join('jury_criteria', function ($join) use ($request) {
+                $join->on('criteria.id', '=', 'jury_criteria.criterion_id')
+                    ->where('jury_criteria.user_id', '=', $request->user()->id);
+            });
+
+            $query->distinct();
+        }
+
+        return $query;
+    }
+
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-
         $validator = Validator::make($request->all(), [
             'period_id' => ['nullable', 'integer', 'exists:election_periods,id'],
             'is_active' => ['nullable', 'boolean'],
@@ -59,21 +81,7 @@ class CriterionController extends Controller
             return $this->error('Validasi gagal.', 422, $validator->errors());
         }
 
-        $query = DB::table('criteria')
-            ->join('election_periods', 'criteria.period_id', '=', 'election_periods.id')
-            ->select(
-                'criteria.*',
-                'election_periods.election_year'
-            );
-
-        if ($user && $user->role === 'juri') {
-            $query->join('jury_criteria', function ($join) use ($user) {
-                $join->on('criteria.id', '=', 'jury_criteria.criterion_id')
-                    ->where('jury_criteria.user_id', '=', $user->id);
-            });
-
-            $query->distinct();
-        }
+        $query = $this->baseQuery($request);
 
         if ($request->filled('period_id')) {
             $query->where('criteria.period_id', $request->period_id);
@@ -108,18 +116,8 @@ class CriterionController extends Controller
 
         $validator = Validator::make($request->all(), [
             'period_id' => ['required', 'integer', 'exists:election_periods,id'],
-            'code' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('criteria', 'code')->where(fn ($query) => $query->where('period_id', $request->period_id)),
-            ],
-            'name' => [
-                'required',
-                'string',
-                'max:150',
-                Rule::unique('criteria', 'name')->where(fn ($query) => $query->where('period_id', $request->period_id)),
-            ],
+            'code' => ['required', 'string', 'max:50'],
+            'name' => ['required', 'string', 'max:150'],
             'weight' => ['required', 'numeric', 'min:0'],
             'type' => ['required', Rule::in(['benefit', 'cost'])],
             'min_score' => ['nullable', 'numeric', 'min:0'],
@@ -140,23 +138,36 @@ class CriterionController extends Controller
             return $this->error('Validasi gagal.', 422, $validator->errors());
         }
 
-        try {
-            $now = now();
+        $code = strtoupper(trim($request->code));
+        $name = trim($request->name);
 
-            $id = DB::table('criteria')->insertGetId([
+        $codeExists = Criterion::where('period_id', $request->period_id)
+            ->where('code', $code)
+            ->exists();
+
+        if ($codeExists) {
+            return $this->error('Kode kriteria sudah digunakan pada periode ini.', 422);
+        }
+
+        $nameExists = Criterion::where('period_id', $request->period_id)
+            ->where('name', $name)
+            ->exists();
+
+        if ($nameExists) {
+            return $this->error('Nama kriteria sudah digunakan pada periode ini.', 422);
+        }
+
+        try {
+            $criterion = Criterion::create([
                 'period_id' => $request->period_id,
-                'code' => strtoupper(trim($request->code)),
-                'name' => trim($request->name),
+                'code' => $code,
+                'name' => $name,
                 'weight' => $request->weight,
                 'type' => $request->type,
                 'min_score' => $request->input('min_score', 0),
                 'max_score' => $request->input('max_score', 100),
                 'is_active' => $request->boolean('is_active', true),
-                'created_at' => $now,
-                'updated_at' => $now,
             ]);
-
-            $criterion = DB::table('criteria')->where('id', $id)->first();
 
             return $this->success($criterion, 'Kriteria berhasil ditambahkan.', 201);
         } catch (Throwable $e) {
@@ -164,26 +175,11 @@ class CriterionController extends Controller
         }
     }
 
-    public function show(string $id, Request $request): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
-
-        $query = DB::table('criteria')
-            ->join('election_periods', 'criteria.period_id', '=', 'election_periods.id')
-            ->select(
-                'criteria.*',
-                'election_periods.election_year'
-            )
-            ->where('criteria.id', $id);
-
-        if ($user && $user->role === 'juri') {
-            $query->join('jury_criteria', function ($join) use ($user) {
-                $join->on('criteria.id', '=', 'jury_criteria.criterion_id')
-                    ->where('jury_criteria.user_id', '=', $user->id);
-            });
-        }
-
-        $criterion = $query->first();
+        $criterion = $this->baseQuery($request)
+            ->where('criteria.id', $id)
+            ->first();
 
         if (!$criterion) {
             return $this->error('Kriteria tidak ditemukan.', 404);
@@ -198,34 +194,16 @@ class CriterionController extends Controller
             return $deny;
         }
 
-        $criterion = DB::table('criteria')->where('id', $id)->first();
+        $criterion = Criterion::find($id);
 
         if (!$criterion) {
             return $this->error('Kriteria tidak ditemukan.', 404);
         }
 
-        $periodId = $request->input('period_id', $criterion->period_id);
-
         $validator = Validator::make($request->all(), [
             'period_id' => ['sometimes', 'required', 'integer', 'exists:election_periods,id'],
-            'code' => [
-                'sometimes',
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('criteria', 'code')
-                    ->where(fn ($query) => $query->where('period_id', $periodId))
-                    ->ignore($id),
-            ],
-            'name' => [
-                'sometimes',
-                'required',
-                'string',
-                'max:150',
-                Rule::unique('criteria', 'name')
-                    ->where(fn ($query) => $query->where('period_id', $periodId))
-                    ->ignore($id),
-            ],
+            'code' => ['sometimes', 'required', 'string', 'max:50'],
+            'name' => ['sometimes', 'required', 'string', 'max:150'],
             'weight' => ['sometimes', 'required', 'numeric', 'min:0'],
             'type' => ['sometimes', 'required', Rule::in(['benefit', 'cost'])],
             'min_score' => ['sometimes', 'required', 'numeric', 'min:0'],
@@ -246,32 +224,43 @@ class CriterionController extends Controller
             return $this->error('Validasi gagal.', 422, $validator->errors());
         }
 
+        $periodId = $request->input('period_id', $criterion->period_id);
+        $code = strtoupper(trim($request->input('code', $criterion->code)));
+        $name = trim($request->input('name', $criterion->name));
+
+        $codeExists = Criterion::where('period_id', $periodId)
+            ->where('code', $code)
+            ->where('id', '!=', $criterion->id)
+            ->exists();
+
+        if ($codeExists) {
+            return $this->error('Kode kriteria sudah digunakan pada periode ini.', 422);
+        }
+
+        $nameExists = Criterion::where('period_id', $periodId)
+            ->where('name', $name)
+            ->where('id', '!=', $criterion->id)
+            ->exists();
+
+        if ($nameExists) {
+            return $this->error('Nama kriteria sudah digunakan pada periode ini.', 422);
+        }
+
         try {
-            $data = [
-                'updated_at' => now(),
-            ];
+            $criterion->update([
+                'period_id' => $periodId,
+                'code' => $code,
+                'name' => $name,
+                'weight' => $request->input('weight', $criterion->weight),
+                'type' => $request->input('type', $criterion->type),
+                'min_score' => $request->input('min_score', $criterion->min_score),
+                'max_score' => $request->input('max_score', $criterion->max_score),
+                'is_active' => $request->has('is_active')
+                    ? $request->boolean('is_active')
+                    : $criterion->is_active,
+            ]);
 
-            foreach (['period_id', 'code', 'name', 'weight', 'type', 'min_score', 'max_score', 'is_active'] as $field) {
-                if ($request->has($field)) {
-                    $data[$field] = $field === 'code'
-                        ? strtoupper(trim($request->input($field)))
-                        : $request->input($field);
-                }
-            }
-
-            if ($request->has('name')) {
-                $data['name'] = trim($request->name);
-            }
-
-            if ($request->has('is_active')) {
-                $data['is_active'] = $request->boolean('is_active');
-            }
-
-            DB::table('criteria')->where('id', $id)->update($data);
-
-            $updated = DB::table('criteria')->where('id', $id)->first();
-
-            return $this->success($updated, 'Kriteria berhasil diperbarui.');
+            return $this->success($criterion->fresh(), 'Kriteria berhasil diperbarui.');
         } catch (Throwable $e) {
             return $this->error('Kriteria gagal diperbarui.', 500, $e->getMessage());
         }
@@ -283,20 +272,22 @@ class CriterionController extends Controller
             return $deny;
         }
 
-        $criterion = DB::table('criteria')->where('id', $id)->first();
+        $criterion = Criterion::find($id);
 
         if (!$criterion) {
             return $this->error('Kriteria tidak ditemukan.', 404);
         }
 
-        $hasScores = DB::table('scores')->where('criterion_id', $id)->exists();
+        $hasScores = DB::table('scores')
+            ->where('criterion_id', $criterion->id)
+            ->exists();
 
         if ($hasScores) {
             return $this->error('Kriteria tidak dapat dihapus karena sudah memiliki data nilai.', 409);
         }
 
         try {
-            DB::table('criteria')->where('id', $id)->delete();
+            $criterion->delete();
 
             return $this->success(null, 'Kriteria berhasil dihapus.');
         } catch (Throwable $e) {

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Criterion;
+use App\Models\JuryCriterion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,9 +45,10 @@ class JuryCriterionController extends Controller
         return null;
     }
 
-    private function assignmentQuery()
+    private function baseQuery(Request $request)
     {
-        return DB::table('jury_criteria')
+        $query = JuryCriterion::query()
+            ->from('jury_criteria')
             ->join('users', 'jury_criteria.user_id', '=', 'users.id')
             ->join('criteria', 'jury_criteria.criterion_id', '=', 'criteria.id')
             ->join('election_periods', 'jury_criteria.period_id', '=', 'election_periods.id')
@@ -64,12 +67,16 @@ class JuryCriterionController extends Controller
                 'criteria.is_active as criterion_is_active',
                 'election_periods.election_year'
             );
+
+        if ($request->user() && $request->user()->role === 'juri') {
+            $query->where('jury_criteria.user_id', $request->user()->id);
+        }
+
+        return $query;
     }
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-
         $validator = Validator::make($request->all(), [
             'period_id' => ['nullable', 'integer', 'exists:election_periods,id'],
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
@@ -81,13 +88,9 @@ class JuryCriterionController extends Controller
             return $this->error('Validasi gagal.', 422, $validator->errors());
         }
 
-        $query = $this->assignmentQuery();
+        $query = $this->baseQuery($request);
 
-        if ($user && $user->role === 'juri') {
-            $query->where('jury_criteria.user_id', $user->id);
-        }
-
-        if ($user && $user->role === 'admin' && $request->filled('user_id')) {
+        if ($request->user() && $request->user()->role === 'admin' && $request->filled('user_id')) {
             $query->where('jury_criteria.user_id', $request->user_id);
         }
 
@@ -137,16 +140,13 @@ class JuryCriterionController extends Controller
             return $this->error('Akun juri sedang nonaktif.', 422);
         }
 
-        $criterion = DB::table('criteria')
-            ->where('id', $request->criterion_id)
-            ->first();
+        $criterion = Criterion::find($request->criterion_id);
 
         if (!$criterion || (int) $criterion->period_id !== (int) $request->period_id) {
             return $this->error('Kriteria tidak sesuai dengan periode yang dipilih.', 422);
         }
 
-        $exists = DB::table('jury_criteria')
-            ->where('period_id', $request->period_id)
+        $exists = JuryCriterion::where('period_id', $request->period_id)
             ->where('user_id', $request->user_id)
             ->where('criterion_id', $request->criterion_id)
             ->exists();
@@ -156,38 +156,27 @@ class JuryCriterionController extends Controller
         }
 
         try {
-            $now = now();
-
-            $id = DB::table('jury_criteria')->insertGetId([
+            $assignment = JuryCriterion::create([
                 'period_id' => $request->period_id,
                 'user_id' => $request->user_id,
                 'criterion_id' => $request->criterion_id,
-                'created_at' => $now,
-                'updated_at' => $now,
             ]);
 
-            $assignment = $this->assignmentQuery()
-                ->where('jury_criteria.id', $id)
+            $data = $this->baseQuery($request)
+                ->where('jury_criteria.id', $assignment->id)
                 ->first();
 
-            return $this->success($assignment, 'Kriteria berhasil ditugaskan kepada juri.', 201);
+            return $this->success($data, 'Kriteria berhasil ditugaskan kepada juri.', 201);
         } catch (Throwable $e) {
             return $this->error('Pembagian kriteria gagal disimpan.', 500, $e->getMessage());
         }
     }
 
-    public function show(string $id, Request $request): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
-
-        $query = $this->assignmentQuery()
-            ->where('jury_criteria.id', $id);
-
-        if ($user && $user->role === 'juri') {
-            $query->where('jury_criteria.user_id', $user->id);
-        }
-
-        $assignment = $query->first();
+        $assignment = $this->baseQuery($request)
+            ->where('jury_criteria.id', $id)
+            ->first();
 
         if (!$assignment) {
             return $this->error('Data pembagian kriteria tidak ditemukan.', 404);
@@ -202,7 +191,7 @@ class JuryCriterionController extends Controller
             return $deny;
         }
 
-        $assignment = DB::table('jury_criteria')->where('id', $id)->first();
+        $assignment = JuryCriterion::find($id);
 
         if (!$assignment) {
             return $this->error('Data pembagian kriteria tidak ditemukan.', 404);
@@ -235,17 +224,16 @@ class JuryCriterionController extends Controller
             return $this->error('Akun juri sedang nonaktif.', 422);
         }
 
-        $criterion = DB::table('criteria')->where('id', $criterionId)->first();
+        $criterion = Criterion::find($criterionId);
 
         if (!$criterion || (int) $criterion->period_id !== (int) $periodId) {
             return $this->error('Kriteria tidak sesuai dengan periode yang dipilih.', 422);
         }
 
-        $duplicate = DB::table('jury_criteria')
-            ->where('period_id', $periodId)
+        $duplicate = JuryCriterion::where('period_id', $periodId)
             ->where('user_id', $userId)
             ->where('criterion_id', $criterionId)
-            ->where('id', '!=', $id)
+            ->where('id', '!=', $assignment->id)
             ->exists();
 
         if ($duplicate) {
@@ -253,20 +241,17 @@ class JuryCriterionController extends Controller
         }
 
         try {
-            DB::table('jury_criteria')
-                ->where('id', $id)
-                ->update([
-                    'period_id' => $periodId,
-                    'user_id' => $userId,
-                    'criterion_id' => $criterionId,
-                    'updated_at' => now(),
-                ]);
+            $assignment->update([
+                'period_id' => $periodId,
+                'user_id' => $userId,
+                'criterion_id' => $criterionId,
+            ]);
 
-            $updated = $this->assignmentQuery()
-                ->where('jury_criteria.id', $id)
+            $data = $this->baseQuery($request)
+                ->where('jury_criteria.id', $assignment->id)
                 ->first();
 
-            return $this->success($updated, 'Pembagian kriteria berhasil diperbarui.');
+            return $this->success($data, 'Pembagian kriteria berhasil diperbarui.');
         } catch (Throwable $e) {
             return $this->error('Pembagian kriteria gagal diperbarui.', 500, $e->getMessage());
         }
@@ -278,7 +263,7 @@ class JuryCriterionController extends Controller
             return $deny;
         }
 
-        $assignment = DB::table('jury_criteria')->where('id', $id)->first();
+        $assignment = JuryCriterion::find($id);
 
         if (!$assignment) {
             return $this->error('Data pembagian kriteria tidak ditemukan.', 404);
@@ -295,7 +280,7 @@ class JuryCriterionController extends Controller
         }
 
         try {
-            DB::table('jury_criteria')->where('id', $id)->delete();
+            $assignment->delete();
 
             return $this->success(null, 'Pembagian kriteria berhasil dihapus.');
         } catch (Throwable $e) {
@@ -339,13 +324,11 @@ class JuryCriterionController extends Controller
             return $this->error('Akun juri sedang nonaktif.', 422);
         }
 
-        $criterionIds = array_values(array_unique($request->input('criteria', [])));
+        $criteriaIds = array_values(array_unique(array_map('intval', $request->input('criteria'))));
 
-        $criteria = DB::table('criteria')
-            ->whereIn('id', $criterionIds)
-            ->get();
+        $criteria = Criterion::whereIn('id', $criteriaIds)->get();
 
-        if ($criteria->count() !== count($criterionIds)) {
+        if ($criteria->count() !== count($criteriaIds)) {
             return $this->error('Ada kriteria yang tidak ditemukan.', 422);
         }
 
@@ -357,46 +340,42 @@ class JuryCriterionController extends Controller
             return $this->error('Semua kriteria harus berada pada periode yang sama.', 422);
         }
 
-        $usedScores = DB::table('scores')
-            ->where('period_id', $request->period_id)
+        $oldCriteriaIds = JuryCriterion::where('period_id', $request->period_id)
             ->where('user_id', $request->user_id)
-            ->whereNotIn('criterion_id', $criterionIds)
-            ->exists();
+            ->pluck('criterion_id')
+            ->toArray();
 
-        if ($usedScores) {
-            return $this->error('Beberapa kriteria tidak dapat diganti karena juri sudah memberi nilai pada kriteria lama.', 409);
+        $removedCriteria = array_diff($oldCriteriaIds, $criteriaIds);
+
+        if (!empty($removedCriteria)) {
+            $hasScores = DB::table('scores')
+                ->where('period_id', $request->period_id)
+                ->where('user_id', $request->user_id)
+                ->whereIn('criterion_id', $removedCriteria)
+                ->exists();
+
+            if ($hasScores) {
+                return $this->error('Beberapa kriteria tidak dapat dihapus karena juri sudah memberi nilai.', 409);
+            }
         }
 
         try {
-            DB::transaction(function () use ($request, $criterionIds) {
-                DB::table('jury_criteria')
-                    ->where('period_id', $request->period_id)
+            DB::transaction(function () use ($request, $criteriaIds) {
+                JuryCriterion::where('period_id', $request->period_id)
                     ->where('user_id', $request->user_id)
-                    ->whereNotIn('criterion_id', $criterionIds)
+                    ->whereNotIn('criterion_id', $criteriaIds)
                     ->delete();
 
-                $now = now();
-
-                foreach ($criterionIds as $criterionId) {
-                    $exists = DB::table('jury_criteria')
-                        ->where('period_id', $request->period_id)
-                        ->where('user_id', $request->user_id)
-                        ->where('criterion_id', $criterionId)
-                        ->exists();
-
-                    if (!$exists) {
-                        DB::table('jury_criteria')->insert([
-                            'period_id' => $request->period_id,
-                            'user_id' => $request->user_id,
-                            'criterion_id' => $criterionId,
-                            'created_at' => $now,
-                            'updated_at' => $now,
-                        ]);
-                    }
+                foreach ($criteriaIds as $criterionId) {
+                    JuryCriterion::firstOrCreate([
+                        'period_id' => $request->period_id,
+                        'user_id' => $request->user_id,
+                        'criterion_id' => $criterionId,
+                    ]);
                 }
             });
 
-            $assignments = $this->assignmentQuery()
+            $assignments = $this->baseQuery($request)
                 ->where('jury_criteria.period_id', $request->period_id)
                 ->where('jury_criteria.user_id', $request->user_id)
                 ->orderBy('criteria.code')
