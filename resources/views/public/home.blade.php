@@ -25,7 +25,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <a href="#login" class="hidden text-sm font-semibold text-blue-900 sm:inline">
+                <a href="{{ route('login') }}" class="hidden text-sm font-semibold text-blue-900 sm:inline">
                     Login
                 </a>
 

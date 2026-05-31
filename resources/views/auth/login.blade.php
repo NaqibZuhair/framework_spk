@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Petugas - Duta PNJ</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -134,8 +135,8 @@
                                 </div>
                             @endif
 
-                            <form method="POST" action="#" class="space-y-6">
-                                @csrf
+                            <div id="loginAlert" class="hidden mb-6 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-700"></div>
+                            <form id="loginForm" class="space-y-6">
 
                                 <div>
                                     <label for="email" class="block mb-2 text-[14px] font-bold text-[#20232A]">
@@ -209,10 +210,12 @@
                                 </div>
 
                                 <button
+                                    id="loginButton"
                                     type="submit"
-                                    class="w-full h-[53px] rounded-[8px] bg-[#00288E] text-white text-[15px] font-bold hover:bg-[#001F73] transition flex items-center justify-center gap-2"
+                                    class="w-full h-[53px] rounded-[8px] bg-[#00288E] text-white text-[15px] font-bold hover:bg-[#001F73] transition flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
-                                    Masuk Ke Dashboard
+                                    <span id="loginButtonText">Masuk Ke Dashboard</span>
+
                                     <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" aria-hidden="true">
                                         <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                         <path d="M13 6L19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -261,15 +264,79 @@
     </div>
 
     <script>
-        function togglePassword() {
-            const input = document.getElementById('password');
+    function togglePassword() {
+        const input = document.getElementById('password');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
 
-            if (input.type === 'password') {
-                input.type = 'text';
-            } else {
-                input.type = 'password';
+    const loginForm = document.getElementById('loginForm');
+    const loginAlert = document.getElementById('loginAlert');
+    const loginButton = document.getElementById('loginButton');
+    const loginButtonText = document.getElementById('loginButtonText');
+
+    loginForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        loginAlert.classList.add('hidden');
+        loginAlert.innerHTML = '';
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        loginButton.disabled = true;
+        loginButtonText.textContent = 'Memproses...';
+
+        try {
+            const response = await fetch("{{ url('/api/login') }}", {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                let errorMessage = result.message || 'Login gagal. Silakan periksa kembali email dan password.';
+
+                if (result.errors) {
+                    errorMessage = Object.values(result.errors)
+                        .flat()
+                        .join('<br>');
+                }
+
+                loginAlert.innerHTML = errorMessage;
+                loginAlert.classList.remove('hidden');
+                return;
             }
+
+            const token = result.data.token;
+            const user = result.data.user;
+
+            localStorage.setItem('duta_kampus_token', token);
+            localStorage.setItem('duta_kampus_user', JSON.stringify(user));
+
+            if (user.role === 'admin') {
+                window.location.href = "{{ url('/admin/dashboard') }}";
+            } else if (user.role === 'juri') {
+                window.location.href = "{{ url('/jury/dashboard') }}";
+            } else {
+                loginAlert.innerHTML = 'Role user tidak dikenali.';
+                loginAlert.classList.remove('hidden');
+            }
+        } catch (error) {
+            loginAlert.innerHTML = 'Tidak dapat terhubung ke server. Pastikan Laravel sedang berjalan.';
+            loginAlert.classList.remove('hidden');
+        } finally {
+            loginButton.disabled = false;
+            loginButtonText.textContent = 'Masuk Ke Dashboard';
         }
-    </script>
+    });
+</script>
 </body>
 </html>
