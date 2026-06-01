@@ -11,9 +11,9 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::get('/admin/dashboard', function () {
-    return 'Dashboard Admin';
+    return view('admin.dashboard');
 })->name('admin.dashboard');
 
 Route::get('/jury/dashboard', function () {
-    return 'Dashboard Juri';
+    return view('jury.dashboard');
 })->name('jury.dashboard');
