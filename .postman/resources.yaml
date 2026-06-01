@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: b40de5be-3746-4f10-886e-26255b5fe663
+
+localResources:
+  docs:
+    - ..\vendor\laravel\framework\src\Illuminate\Validation\LICENSE.md

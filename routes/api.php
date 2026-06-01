@@ -27,7 +27,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/candidates/{candidate}/reject', [CandidateController::class, 'rejectCandidate']);
 
     Route::apiResource('criteria', CriterionController::class);
+    Route::post('criteria/sync', [CriterionController::class, 'sync']);
 
+    Route::get('jury-criteria/options', [JuryCriterionController::class, 'options']);
     Route::post('/jury-criteria/sync', [JuryCriterionController::class, 'sync']);
     Route::apiResource('jury-criteria', JuryCriterionController::class);
 

@@ -53,7 +53,12 @@ class JuryCriterionController extends Controller
             ->join('criteria', 'jury_criteria.criterion_id', '=', 'criteria.id')
             ->join('election_periods', 'jury_criteria.period_id', '=', 'election_periods.id')
             ->select(
-                'jury_criteria.*',
+                'jury_criteria.id',
+                'jury_criteria.period_id',
+                'jury_criteria.user_id',
+                'jury_criteria.criterion_id',
+                'jury_criteria.created_at',
+                'jury_criteria.updated_at',
                 'users.name as jury_name',
                 'users.email as jury_email',
                 'users.phone as jury_phone',
@@ -73,6 +78,91 @@ class JuryCriterionController extends Controller
         }
 
         return $query;
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        if ($deny = $this->adminOnly($request)) {
+            return $deny;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'period_id' => ['nullable', 'integer', 'exists:election_periods,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validasi gagal.', 422, $validator->errors());
+        }
+
+        $period = null;
+
+        if ($request->filled('period_id')) {
+            $period = DB::table('election_periods')
+                ->where('id', $request->period_id)
+                ->first();
+        }
+
+        if (!$period) {
+            $period = DB::table('election_periods')
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if (!$period) {
+            return $this->error('Periode pemilihan belum tersedia.', 404);
+        }
+
+        $juries = DB::table('users')
+            ->where('role', 'juri')
+            ->orderBy('name')
+            ->select(
+                'id',
+                'name',
+                'email',
+                'phone',
+                'is_active'
+            )
+            ->get();
+
+        $criteria = DB::table('criteria')
+            ->where('period_id', $period->id)
+            ->orderBy('code')
+            ->select(
+                'id',
+                'period_id',
+                'code',
+                'name',
+                'weight',
+                'type',
+                'min_score',
+                'max_score',
+                'is_active'
+            )
+            ->get();
+
+        $assignments = DB::table('jury_criteria')
+            ->where('period_id', $period->id)
+            ->select(
+                'id',
+                'period_id',
+                'user_id',
+                'criterion_id'
+            )
+            ->get();
+
+        $groupedAssignments = $assignments
+            ->groupBy('user_id')
+            ->map(function ($items) {
+                return $items->pluck('criterion_id')->values();
+            });
+
+        return $this->success([
+            'period' => $period,
+            'juries' => $juries,
+            'criteria' => $criteria,
+            'assignments' => $assignments,
+            'grouped_assignments' => $groupedAssignments,
+        ], 'Data pilihan juri dan kriteria berhasil diambil.');
     }
 
     public function index(Request $request): JsonResponse
@@ -142,7 +232,11 @@ class JuryCriterionController extends Controller
 
         $criterion = Criterion::find($request->criterion_id);
 
-        if (!$criterion || (int) $criterion->period_id !== (int) $request->period_id) {
+        if (!$criterion) {
+            return $this->error('Kriteria tidak ditemukan.', 404);
+        }
+
+        if ((int) $criterion->period_id !== (int) $request->period_id) {
             return $this->error('Kriteria tidak sesuai dengan periode yang dipilih.', 422);
         }
 
@@ -226,7 +320,11 @@ class JuryCriterionController extends Controller
 
         $criterion = Criterion::find($criterionId);
 
-        if (!$criterion || (int) $criterion->period_id !== (int) $periodId) {
+        if (!$criterion) {
+            return $this->error('Kriteria tidak ditemukan.', 404);
+        }
+
+        if ((int) $criterion->period_id !== (int) $periodId) {
             return $this->error('Kriteria tidak sesuai dengan periode yang dipilih.', 422);
         }
 
