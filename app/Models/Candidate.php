@@ -92,4 +92,6 @@ class Candidate extends Model
             ? asset('storage/' . $this->cv_file)
             : null;
     }
+
+    
 }

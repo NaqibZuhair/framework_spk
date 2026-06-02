@@ -39,6 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/aras-results/calculate', [ArasResultController::class, 'calculate']);
     Route::apiResource('aras-results', ArasResultController::class)
         ->only(['index', 'show', 'destroy']);
+
+
+
 });
 
 // use Illuminate\Support\Facades\Route;
