@@ -69,4 +69,14 @@ class User extends Authenticatable
     {
         return $this->role === 'juri';
     }
+
+    public function scopeAdmin($query)
+    {
+        return $query->where('role', 'admin');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

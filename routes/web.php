@@ -19,6 +19,25 @@ Route::get('/admin/dashboard', function () {
     ]);
 })->name('admin.dashboard');
 
+Route::get('/admin/juries', function () {
+    return view('admin.juries.index', [
+        'title' => 'Akun Juri - Duta PNJ',
+    ]);
+})->name('admin.juries.index');
+
+Route::get('/admin/juries/create', function () {
+    return view('admin.juries.create', [
+        'title' => 'Tambah Akun Juri - Duta PNJ',
+    ]);
+})->name('admin.juries.create');
+
+Route::get('/admin/juries/{jury}/edit', function ($jury) {
+    return view('admin.juries.edit', [
+        'title' => 'Edit Akun Juri - Duta PNJ',
+        'juryId' => $jury,
+    ]);
+})->name('admin.juries.edit');
+
 Route::get('/admin/juries/assign-criteria', function () {
     return view('admin.juries.assign-criteria', [
         'title' => 'Assign Kriteria Juri - Duta PNJ',
