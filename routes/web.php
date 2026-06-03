@@ -17,3 +17,11 @@ Route::get('/admin/dashboard', function () {
 Route::get('/jury/dashboard', function () {
     return view('jury.dashboard');
 })->name('jury.dashboard');
+
+Route::get('/registration', function () {
+    return view('public.registration');
+})->name('registration');
+
+Route::get('/registration-success', function () {
+    return view('public.registration-success');
+})->name('registration.success');

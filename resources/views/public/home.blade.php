@@ -29,8 +29,8 @@
                     Login
                 </a>
 
-                <a href="#daftar"
-                   class="rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800">
+                <a href="{{ route('registration') }}"
+                class="rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800">
                     Daftar
                 </a>
             </div>
@@ -55,8 +55,8 @@
                 </p>
 
                 <div class="mt-8 flex flex-wrap gap-4">
-                    <a href="#daftar"
-                       class="rounded-lg bg-blue-900 px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800">
+                    <a href="{{ route('registration') }}"
+                    class="rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800">
                         Daftar Sekarang
                     </a>
                 </div>
