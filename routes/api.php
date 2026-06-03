@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\JuryCriterionController;
 use App\Http\Controllers\Api\InterviewController;
 use App\Http\Controllers\Api\ScoreController;
 use App\Http\Controllers\Api\ArasResultController;
+use App\Http\Controllers\Api\JuryController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -27,7 +28,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/candidates/{candidate}/reject', [CandidateController::class, 'rejectCandidate']);
 
     Route::apiResource('criteria', CriterionController::class);
+    Route::post('criteria/sync', [CriterionController::class, 'sync']);
 
+    Route::get('juries/options', [JuryController::class, 'options']);
+    Route::post('juries/{jury}/reset-password', [JuryController::class, 'resetPassword']);
+    Route::patch('juries/{jury}/toggle-status', [JuryController::class, 'toggleStatus']);
+    Route::apiResource('juries', JuryController::class);
+
+    Route::get('jury-criteria/options', [JuryCriterionController::class, 'options']);
     Route::post('/jury-criteria/sync', [JuryCriterionController::class, 'sync']);
     Route::apiResource('jury-criteria', JuryCriterionController::class);
 

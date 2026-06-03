@@ -53,7 +53,15 @@ class InterviewController extends Controller
             ->join('election_periods', 'interviews.period_id', '=', 'election_periods.id')
             ->leftJoin('users as creators', 'interviews.created_by', '=', 'creators.id')
             ->select(
-                'interviews.*',
+                'interviews.id',
+                'interviews.period_id',
+                'interviews.candidate_id',
+                'interviews.scheduled_at',
+                'interviews.location',
+                'interviews.status',
+                'interviews.created_by',
+                'interviews.created_at',
+                'interviews.updated_at',
                 'candidates.registration_number',
                 'candidates.full_name',
                 'candidates.student_number',
@@ -112,7 +120,8 @@ class InterviewController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('candidates.full_name', 'like', "%{$search}%")
                     ->orWhere('candidates.student_number', 'like', "%{$search}%")
-                    ->orWhere('candidates.registration_number', 'like', "%{$search}%");
+                    ->orWhere('candidates.registration_number', 'like', "%{$search}%")
+                    ->orWhere('candidates.study_program', 'like', "%{$search}%");
             });
         }
 
@@ -212,7 +221,13 @@ class InterviewController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'candidate_id' => ['sometimes', 'required', 'integer', 'exists:candidates,id'],
+            'candidate_id' => [
+                'sometimes',
+                'required',
+                'integer',
+                'exists:candidates,id',
+                Rule::unique('interviews', 'candidate_id')->ignore($interview->id),
+            ],
             'scheduled_at' => ['sometimes', 'required', 'date'],
             'location' => ['sometimes', 'nullable', 'string', 'max:255'],
             'status' => ['sometimes', 'required', Rule::in(['scheduled', 'completed', 'absent', 'cancelled'])],
@@ -237,14 +252,6 @@ class InterviewController extends Controller
 
                 if ($newCandidate->status !== 'valid') {
                     return $this->error('Calon pengganti harus berstatus valid.', 422);
-                }
-
-                $used = Interview::where('candidate_id', $candidateId)
-                    ->where('id', '!=', $interview->id)
-                    ->exists();
-
-                if ($used) {
-                    return $this->error('Calon pengganti sudah memiliki jadwal wawancara.', 409);
                 }
 
                 $oldCandidate = DB::table('candidates')

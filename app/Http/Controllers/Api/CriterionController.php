@@ -266,6 +266,182 @@ class CriterionController extends Controller
         }
     }
 
+    public function sync(Request $request): JsonResponse
+    {
+        if ($deny = $this->adminOnly($request)) {
+            return $deny;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'period_id' => ['required', 'integer', 'exists:election_periods,id'],
+            'criteria' => ['required', 'array', 'min:1'],
+
+            'criteria.*.id' => ['nullable', 'integer', 'exists:criteria,id'],
+            'criteria.*.code' => ['required', 'string', 'max:50'],
+            'criteria.*.name' => ['required', 'string', 'max:150'],
+            'criteria.*.weight' => ['required', 'numeric', 'min:0'],
+            'criteria.*.type' => ['required', Rule::in(['benefit', 'cost'])],
+            'criteria.*.min_score' => ['nullable', 'numeric', 'min:0'],
+            'criteria.*.max_score' => ['required', 'numeric', 'min:0'],
+            'criteria.*.is_active' => ['required', 'boolean'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validasi gagal.', 422, $validator->errors());
+        }
+
+        $periodId = (int) $request->period_id;
+        $rows = $request->criteria;
+
+        $normalizedRows = [];
+        $codes = [];
+        $names = [];
+        $activeWeightTotal = 0;
+
+        foreach ($rows as $index => $row) {
+            $id = $row['id'] ?? null;
+            $code = strtoupper(trim($row['code']));
+            $name = trim($row['name']);
+            $nameKey = strtolower($name);
+            $weight = (float) $row['weight'];
+            $type = $row['type'];
+            $minScore = (float) ($row['min_score'] ?? 0);
+            $maxScore = (float) $row['max_score'];
+            $isActive = filter_var($row['is_active'], FILTER_VALIDATE_BOOLEAN);
+
+            if ($code === '') {
+                return $this->error('Kode kriteria pada baris ' . ($index + 1) . ' wajib diisi.', 422);
+            }
+
+            if ($name === '') {
+                return $this->error('Nama kriteria pada baris ' . ($index + 1) . ' wajib diisi.', 422);
+            }
+
+            if ($minScore >= $maxScore) {
+                return $this->error('Nilai maksimal harus lebih besar dari nilai minimal pada baris ' . ($index + 1) . '.', 422);
+            }
+
+            if (isset($codes[$code])) {
+                return $this->error('Kode kriteria ' . $code . ' digunakan lebih dari satu kali.', 422);
+            }
+
+            if (isset($names[$nameKey])) {
+                return $this->error('Nama kriteria "' . $name . '" digunakan lebih dari satu kali.', 422);
+            }
+
+            $codes[$code] = true;
+            $names[$nameKey] = true;
+
+            if ($isActive) {
+                $activeWeightTotal += $weight;
+            }
+
+            $normalizedRows[] = [
+                'id' => $id ? (int) $id : null,
+                'period_id' => $periodId,
+                'code' => $code,
+                'name' => $name,
+                'weight' => $weight,
+                'type' => $type,
+                'min_score' => $minScore,
+                'max_score' => $maxScore,
+                'is_active' => $isActive,
+            ];
+        }
+
+        if (abs($activeWeightTotal - 1) > 0.0001) {
+            return $this->error(
+                'Total bobot kriteria aktif harus 100%. Total saat ini: ' . number_format($activeWeightTotal * 100, 2) . '%.',
+                422
+            );
+        }
+
+        $incomingIds = collect($normalizedRows)
+            ->pluck('id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->toArray();
+
+        if (!empty($incomingIds)) {
+            $validExistingCount = Criterion::where('period_id', $periodId)
+                ->whereIn('id', $incomingIds)
+                ->count();
+
+            if ($validExistingCount !== count($incomingIds)) {
+                return $this->error('Ada kriteria yang tidak sesuai dengan periode yang dipilih.', 422);
+            }
+        }
+
+        $existingIds = Criterion::where('period_id', $periodId)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->toArray();
+
+        $deleteIds = array_values(array_diff($existingIds, $incomingIds));
+
+        if (!empty($deleteIds)) {
+            $usedCriteria = DB::table('scores')
+                ->whereIn('criterion_id', $deleteIds)
+                ->exists();
+
+            if ($usedCriteria) {
+                return $this->error('Beberapa kriteria tidak dapat dihapus karena sudah memiliki data nilai.', 409);
+            }
+        }
+
+        try {
+            DB::transaction(function () use ($periodId, $normalizedRows, $deleteIds) {
+                if (!empty($deleteIds)) {
+                    DB::table('jury_criteria')
+                        ->whereIn('criterion_id', $deleteIds)
+                        ->delete();
+
+                    Criterion::where('period_id', $periodId)
+                        ->whereIn('id', $deleteIds)
+                        ->delete();
+                }
+
+                foreach ($normalizedRows as $row) {
+                    if ($row['id']) {
+                        Criterion::where('period_id', $periodId)
+                            ->where('id', $row['id'])
+                            ->update([
+                                'code' => $row['code'],
+                                'name' => $row['name'],
+                                'weight' => $row['weight'],
+                                'type' => $row['type'],
+                                'min_score' => $row['min_score'],
+                                'max_score' => $row['max_score'],
+                                'is_active' => $row['is_active'],
+                                'updated_at' => now(),
+                            ]);
+                    } else {
+                        Criterion::create([
+                            'period_id' => $periodId,
+                            'code' => $row['code'],
+                            'name' => $row['name'],
+                            'weight' => $row['weight'],
+                            'type' => $row['type'],
+                            'min_score' => $row['min_score'],
+                            'max_score' => $row['max_score'],
+                            'is_active' => $row['is_active'],
+                        ]);
+                    }
+                }
+            });
+
+            $criteria = $this->baseQuery($request)
+                ->where('criteria.period_id', $periodId)
+                ->orderBy('criteria.code')
+                ->get();
+
+            return $this->success($criteria, 'Seluruh kriteria berhasil disimpan.');
+        } catch (Throwable $e) {
+            return $this->error('Kriteria gagal disimpan.', 500, $e->getMessage());
+        }
+    }
+
     public function destroy(Request $request, string $id): JsonResponse
     {
         if ($deny = $this->adminOnly($request)) {
