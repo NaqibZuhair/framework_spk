@@ -50,17 +50,35 @@ Route::get('/admin/criteria', function () {
     ]);
 })->name('admin.criteria.index');
 
+Route::get('/admin/interviews', function () {
+    return view('admin.interviews.index', [
+        'title' => 'Jadwal Wawancara - Duta PNJ',
+    ]);
+})->name('admin.interviews.index');
+
+Route::get('/admin/interviews/create', function () {
+    return view('admin.interviews.create', [
+        'title' => 'Generate Jadwal Wawancara - Duta PNJ',
+    ]);
+})->name('admin.interviews.create');
+
+Route::get('/admin/interviews/{interview}', function ($interview) {
+    return view('admin.interviews.show', [
+        'title' => 'Detail Jadwal Wawancara - Duta PNJ',
+        'interviewId' => $interview,
+    ]);
+})->name('admin.interviews.show');
+
+Route::get('/admin/interviews/{interview}/edit', function ($interview) {
+    return view('admin.interviews.edit', [
+        'title' => 'Edit Jadwal Wawancara - Duta PNJ',
+        'interviewId' => $interview,
+    ]);
+})->name('admin.interviews.edit');
+
 Route::get('/jury/dashboard', function () {
     return view('jury.dashboard');
 })->name('jury.dashboard');
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('criteria', CriterionController::class);
-    Route::apiResource('jury-criteria', JuryCriterionController::class);
-    Route::post('jury-criteria/sync', [JuryCriterionController::class, 'sync']);
-    Route::apiResource('interviews', InterviewController::class);
-    Route::post('criteria/sync', [CriterionController::class, 'sync']);
-});
 
 Route::get('/registration', function () {
     return view('public.registration');

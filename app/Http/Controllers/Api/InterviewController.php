@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 use Throwable;
+
 
 class InterviewController extends Controller
 {
@@ -86,8 +88,156 @@ class InterviewController extends Controller
         };
     }
 
+    public function generate(Request $request): JsonResponse
+    {
+        if ($deny = $this->adminOnly($request)) {
+            return $deny;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'period_id' => ['required', 'integer', 'exists:election_periods,id'],
+            'interview_date' => ['required', 'date'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'duration_minutes' => ['required', 'integer', 'min:5', 'max:120'],
+            'location' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validasi gagal.', 422, $validator->errors());
+        }
+
+        try {
+            return DB::transaction(function () use ($request) {
+                $periodId = (int) $request->period_id;
+                $durationMinutes = (int) $request->duration_minutes;
+
+                $startDateTime = Carbon::createFromFormat(
+                    'Y-m-d H:i',
+                    $request->interview_date . ' ' . $request->start_time
+                );
+
+                $scheduledCandidateIds = DB::table('interviews')
+                    ->where('period_id', $periodId)
+                    ->pluck('candidate_id')
+                    ->map(fn ($id) => (int) $id)
+                    ->toArray();
+
+                $candidates = DB::table('candidates')
+                    ->where('period_id', $periodId)
+                    ->where('status', 'valid')
+                    ->when(!empty($scheduledCandidateIds), function ($query) use ($scheduledCandidateIds) {
+                        $query->whereNotIn('id', $scheduledCandidateIds);
+                    })
+                    ->orderBy('registration_number')
+                    ->orderBy('created_at')
+                    ->get();
+
+                if ($candidates->isEmpty()) {
+                    return $this->error('Tidak ada calon valid yang belum memiliki jadwal wawancara.', 422);
+                }
+
+                $now = now();
+                $rows = [];
+
+                foreach ($candidates as $index => $candidate) {
+                    $scheduledAt = $startDateTime->copy()->addMinutes($index * $durationMinutes);
+
+                    $rows[] = [
+                        'period_id' => $periodId,
+                        'candidate_id' => $candidate->id,
+                        'scheduled_at' => $scheduledAt,
+                        'location' => $request->input('location'),
+                        'status' => 'scheduled',
+                        'created_by' => $request->user()->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                DB::table('interviews')->insert($rows);
+
+                DB::table('candidates')
+                    ->whereIn('id', $candidates->pluck('id')->toArray())
+                    ->update([
+                        'status' => 'interview_scheduled',
+                        'updated_at' => $now,
+                    ]);
+
+                return $this->success([
+                    'generated_count' => count($rows),
+                    'start_at' => $startDateTime->format('Y-m-d H:i:s'),
+                    'duration_minutes' => $durationMinutes,
+                    'location' => $request->input('location'),
+                ], 'Jadwal wawancara berhasil dibuat otomatis.', 201);
+            });
+        } catch (Throwable $e) {
+            return $this->error('Generate jadwal wawancara gagal.', 500, $e->getMessage());
+        }
+    }
+
+    public function reset(Request $request): JsonResponse
+    {
+        if ($deny = $this->adminOnly($request)) {
+            return $deny;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'period_id' => ['required', 'integer', 'exists:election_periods,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validasi gagal.', 422, $validator->errors());
+        }
+
+        try {
+            return DB::transaction(function () use ($request) {
+                $periodId = (int) $request->period_id;
+
+                $interviews = DB::table('interviews')
+                    ->where('period_id', $periodId)
+                    ->get(['id', 'candidate_id']);
+
+                if ($interviews->isEmpty()) {
+                    return $this->success([
+                        'deleted_count' => 0,
+                        'restored_candidates_count' => 0,
+                    ], 'Tidak ada jadwal wawancara yang perlu direset.');
+                }
+
+                $candidateIds = $interviews
+                    ->pluck('candidate_id')
+                    ->unique()
+                    ->values()
+                    ->toArray();
+
+                $deletedCount = DB::table('interviews')
+                    ->where('period_id', $periodId)
+                    ->delete();
+
+                $restoredCandidatesCount = DB::table('candidates')
+                    ->whereIn('id', $candidateIds)
+                    ->whereIn('status', ['interview_scheduled', 'interviewed'])
+                    ->update([
+                        'status' => 'valid',
+                        'updated_at' => now(),
+                    ]);
+
+                return $this->success([
+                    'deleted_count' => $deletedCount,
+                    'restored_candidates_count' => $restoredCandidatesCount,
+                ], 'Jadwal wawancara berhasil direset.');
+            });
+        } catch (Throwable $e) {
+            return $this->error('Reset jadwal wawancara gagal.', 500, $e->getMessage());
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
+        if ($deny = $this->adminOnly($request)) {
+            return $deny;
+        }
+
         $validator = Validator::make($request->all(), [
             'period_id' => ['nullable', 'integer', 'exists:election_periods,id'],
             'status' => ['nullable', Rule::in(['scheduled', 'completed', 'absent', 'cancelled'])],
@@ -195,8 +345,12 @@ class InterviewController extends Controller
         }
     }
 
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
+        if ($deny = $this->adminOnly($request)) {
+            return $deny;
+        }
+
         $interview = $this->baseQuery()
             ->where('interviews.id', $id)
             ->first();

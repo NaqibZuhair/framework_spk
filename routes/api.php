@@ -39,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/jury-criteria/sync', [JuryCriterionController::class, 'sync']);
     Route::apiResource('jury-criteria', JuryCriterionController::class);
 
+    Route::post('/interviews/generate', [InterviewController::class, 'generate']);
+    Route::post('/interviews/reset', [InterviewController::class, 'reset']);
     Route::apiResource('interviews', InterviewController::class);
 
     Route::get('/my-scores', [ScoreController::class, 'myScores']);
