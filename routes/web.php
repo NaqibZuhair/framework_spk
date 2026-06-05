@@ -89,6 +89,12 @@ Route::get('/admin/interviews/{interview}/edit', function ($interview) {
     ]);
 })->name('admin.interviews.edit');
 
+Route::get('/admin/monitoring', function () {
+    return view('admin.monitoring.index', [
+        'title' => 'Monitoring Penilaian - Duta PNJ',
+    ]);
+})->name('admin.monitoring.index');
+
 Route::get('/jury/dashboard', function () {
     return view('jury.dashboard');
 })->name('jury.dashboard');

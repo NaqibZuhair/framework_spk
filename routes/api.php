@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\ScoreController;
 use App\Http\Controllers\Api\ArasResultController;
 use App\Http\Controllers\Api\JuryController;
 use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Api\MonitoringController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -52,6 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/aras-results/calculate', [ArasResultController::class, 'calculate']);
     Route::apiResource('aras-results', ArasResultController::class)
         ->only(['index', 'show', 'destroy']);
+
+    Route::get('/monitoring/scores', [MonitoringController::class, 'scores']);
 
     Route::post('/announcements/check-readiness', [AnnouncementController::class, 'checkReadiness']);
     Route::post('/announcements/publish', [AnnouncementController::class, 'publish']);
