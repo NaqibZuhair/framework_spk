@@ -87,3 +87,9 @@ Route::get('/registration', function () {
 Route::get('/registration-success', function () {
     return view('public.registration-success');
 })->name('registration.success');
+
+Route::get('/admin/candidates', function () {
+    return view('admin.candidates.index', [
+        'title' => 'Data Pendaftar - Duta PNJ',
+    ]);
+})->name('admin.candidates.index');
