@@ -31,6 +31,13 @@ Route::get('/admin/juries/create', function () {
     ]);
 })->name('admin.juries.create');
 
+Route::get('/admin/juries/{jury}', function ($jury) {
+    return view('admin.juries.show', [
+        'title' => 'Detail Akun Juri - Duta PNJ',
+        'juryId' => $jury,
+    ]);
+})->name('admin.juries.show');
+
 Route::get('/admin/juries/{jury}/edit', function ($jury) {
     return view('admin.juries.edit', [
         'title' => 'Edit Akun Juri - Duta PNJ',

@@ -135,41 +135,6 @@
         </x-card>
     </section>
 
-    {{-- Modal Detail --}}
-    <div id="detailModal" class="fixed inset-0 z-[90] hidden">
-        <div class="absolute inset-0 bg-slate-900/50" onclick="closeDetailModal()"></div>
-
-        <div class="relative mx-auto mt-20 w-[92%] max-w-2xl">
-            <div class="overflow-hidden rounded-xl bg-white shadow-xl">
-                <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                    <h2 class="text-lg font-extrabold text-slate-900">
-                        Detail Akun Juri
-                    </h2>
-
-                    <button type="button" onclick="closeDetailModal()" class="rounded-md p-1 text-slate-500 hover:bg-slate-100">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <div id="detailModalContent" class="px-5 py-5 text-sm text-slate-600">
-                    Memuat detail...
-                </div>
-
-                <div class="flex justify-end border-t border-slate-200 bg-slate-50 px-5 py-4">
-                    <button
-                        type="button"
-                        onclick="closeDetailModal()"
-                        class="rounded-md bg-[#00288E] px-4 py-2 text-sm font-bold text-white hover:bg-[#001F73]"
-                    >
-                        Tutup
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- Modal Reset Password --}}
     <div id="resetPasswordModal" class="fixed inset-0 z-[90] hidden">
         <div class="absolute inset-0 bg-slate-900/50" onclick="closeResetPasswordModal()"></div>
@@ -381,13 +346,12 @@
 
                         <td class="px-6 py-4">
                             <div class="flex flex-wrap items-center gap-2">
-                                <button
-                                    type="button"
-                                    onclick="openDetailModal(${jury.id})"
+                                <a
+                                    href="/admin/juries/${jury.id}"
                                     class="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
                                 >
                                     Detail
-                                </button>
+                                </a>
 
                                 <a
                                     href="/admin/juries/${jury.id}/edit"
@@ -446,68 +410,6 @@
 
             pagination.current_page = nextPage;
             loadJuries();
-        }
-
-        function openDetailModal(id) {
-            const jury = juriesData.find(item => Number(item.id) === Number(id));
-
-            if (!jury) {
-                showAlert('danger', 'Data juri tidak ditemukan.');
-                return;
-            }
-
-            const criteria = jury.criteria || [];
-
-            document.getElementById('detailModalContent').innerHTML = `
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                        <p class="text-xs font-bold uppercase text-slate-500">Nama Juri</p>
-                        <p class="mt-1 font-extrabold text-slate-900">${escapeHtml(jury.name || '-')}</p>
-                    </div>
-
-                    <div>
-                        <p class="text-xs font-bold uppercase text-slate-500">Status</p>
-                        <div class="mt-1">${renderStatusBadge(jury.is_active)}</div>
-                    </div>
-
-                    <div>
-                        <p class="text-xs font-bold uppercase text-slate-500">Email</p>
-                        <p class="mt-1 font-semibold text-slate-700">${escapeHtml(jury.email || '-')}</p>
-                    </div>
-
-                    <div>
-                        <p class="text-xs font-bold uppercase text-slate-500">Nomor HP</p>
-                        <p class="mt-1 font-semibold text-slate-700">${escapeHtml(jury.phone || '-')}</p>
-                    </div>
-                </div>
-
-                <div class="mt-5 border-t border-slate-200 pt-5">
-                    <p class="text-xs font-bold uppercase text-slate-500">Kriteria Ditugaskan</p>
-
-                    <div class="mt-3 space-y-2">
-                        ${criteria.length ? criteria.map(item => `
-                            <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
-                                <p class="font-extrabold text-slate-900">
-                                    ${escapeHtml(item.code)} - ${escapeHtml(item.name)}
-                                </p>
-                                <p class="mt-1 text-xs text-slate-500">
-                                    Bobot ${formatNumber(Number(item.weight || 0) * 100)}% • ${escapeHtml(item.type || '-')}
-                                </p>
-                            </div>
-                        `).join('') : `
-                            <p class="text-sm text-red-600">
-                                Belum ada kriteria yang ditugaskan.
-                            </p>
-                        `}
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('detailModal').classList.remove('hidden');
-        }
-
-        function closeDetailModal() {
-            document.getElementById('detailModal').classList.add('hidden');
         }
 
         function openResetPasswordModal(id) {
