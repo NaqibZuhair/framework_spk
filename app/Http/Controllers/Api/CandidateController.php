@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Mail\CandidateRegistrationSuccess;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class CandidateController extends Controller
 {
@@ -93,11 +96,25 @@ class CandidateController extends Controller
                 ]);
             });
 
+            $emailSent = true;
+            try {
+                Mail::to($candidate->email)->send(new CandidateRegistrationSuccess($candidate));
+            } catch (\Throwable $mailException) {
+                $emailSent = false;
+
+                Log::warning('Email pendaftaran gagal dikirim.', [
+                    'candidate_id' => $candidate->id,
+                    'email' => $candidate->email,
+                    'error' => $mailException->getMessage(),
+                ]);
+            }
+
             return response()->json([
                 'message' => 'Pendaftaran berhasil disimpan.',
                 'data' => [
                     'candidate' => $candidate,
                     'registration_number' => $candidate->registration_number,
+                    'email_sent' => $emailSent,
                 ],
             ], 201);
         } catch (\Throwable $e) {
