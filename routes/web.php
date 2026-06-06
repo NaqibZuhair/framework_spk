@@ -5,7 +5,6 @@ use App\Http\Controllers\Auth\WebLoginController;
 
 //Public Pages
 
-// Public Pages
 Route::get('/', function () {
     return view('public.home');
 })->name('home');
@@ -53,6 +52,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             'title' => 'Data Pendaftar - Admin',
         ]);
     })->name('admin.candidates.index');
+
+    Route::get('/admin/candidates/{candidate}', function ($candidate) {
+        return view('admin.candidates.show', [
+            'title' => 'Detail Pendaftar - Admin',
+            'candidateId' => $candidate,
+        ]);
+    })->name('admin.candidates.show');
 
     Route::get('/admin/criteria', function () {
         return view('admin.criteria.index', [

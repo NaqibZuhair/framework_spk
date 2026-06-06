@@ -65,7 +65,7 @@
                 });
 
                 if (response.status === 401 || response.status === 419) {
-                    console.warn('API 401: session belum terbaca oleh endpoint API.');
+                    console.warn('Sesi login tidak valid atau sudah berakhir.');
                     return null;
                 }
 
