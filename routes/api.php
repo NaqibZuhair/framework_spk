@@ -61,7 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::get('/my-scores', [ScoreController::class, 'myScores']);
-    Route::apiResource('scores', ScoreController::class);
+    Route::apiResource('scores', ScoreController::class)
+    ->only(['index', 'show']);
 
 
     Route::post('/aras-results/calculate', [ArasResultController::class, 'calculate']);
