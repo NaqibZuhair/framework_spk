@@ -18,7 +18,7 @@
 
     @include('partials.navbar')
 
-    <main class="min-h-screen pt-13.5 lg:pl-64.5">
+    <main class="min-h-screen pt-16 lg:pl-64.5">
         <div class="px-6 py-9 lg:px-7">
             @yield('content')
         </div>
@@ -168,6 +168,17 @@
             } catch (error) {
                 console.error('Gagal memuat periode:', error);
             }
+        }
+
+        async function confirmLogout() {
+            const button = document.getElementById('confirmLogoutButton');
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Keluar...';
+            }
+
+            await DutaAdmin.logout();
         }
     </script>
 

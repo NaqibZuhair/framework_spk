@@ -1,218 +1,350 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="px-6 py-6 lg:px-8">
-
+<div class="space-y-6">
     {{-- Header --}}
-    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <section class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-slate-900">Manajemen Periode Seleksi</h1>
-            <p class="mt-1 text-sm text-slate-500">
+            <h1 class="text-4xl font-extrabold tracking-tight text-blue-900">
+                Manajemen Periode Seleksi
+            </h1>
+
+            <p class="mt-2 text-sm font-semibold leading-6 text-slate-500">
                 Kelola tahun pemilihan, jadwal pendaftaran, jadwal wawancara, dan status proses seleksi.
             </p>
         </div>
 
         <button
             type="button"
-            id="btnOpenForm"
-            class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700">
+            id="btnOpenCreateModal"
+            class="inline-flex h-12 items-center justify-center rounded-xl bg-blue-900 px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-800"
+        >
             Tambah Periode
         </button>
-    </div>
+    </section>
 
     {{-- Alert --}}
-    <div id="alertBox" class="mb-5 hidden rounded-xl px-4 py-3 text-sm"></div>
+    <div id="alertBox" class="hidden rounded-xl border px-4 py-3 text-sm font-semibold"></div>
 
     {{-- Statistik --}}
-    <div class="mb-6 grid gap-4 md:grid-cols-4">
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p class="text-sm text-slate-500">Total Periode</p>
-            <h2 id="totalPeriod" class="mt-2 text-2xl font-bold text-slate-900">0</h2>
+    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-semibold text-slate-500">Total Periode</p>
+            <h2 id="totalPeriod" class="mt-2 text-4xl font-extrabold text-slate-900">0</h2>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p class="text-sm text-slate-500">Pendaftaran Aktif</p>
-            <h2 id="registrationPeriod" class="mt-2 text-2xl font-bold text-green-600">0</h2>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-semibold text-slate-500">Pendaftaran Aktif</p>
+            <h2 id="registrationPeriod" class="mt-2 text-4xl font-extrabold text-green-600">0</h2>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p class="text-sm text-slate-500">Tahap Penilaian</p>
-            <h2 id="scoringPeriod" class="mt-2 text-2xl font-bold text-amber-600">0</h2>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-semibold text-slate-500">Tahap Penilaian</p>
+            <h2 id="scoringPeriod" class="mt-2 text-4xl font-extrabold text-amber-600">0</h2>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p class="text-sm text-slate-500">Selesai</p>
-            <h2 id="finishedPeriod" class="mt-2 text-2xl font-bold text-slate-700">0</h2>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-semibold text-slate-500">Selesai</p>
+            <h2 id="finishedPeriod" class="mt-2 text-4xl font-extrabold text-slate-900">0</h2>
         </div>
-    </div>
+    </section>
 
-    {{-- Form Tambah/Edit --}}
-    <div id="formCard" class="mb-6 hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="mb-4 flex items-center justify-between">
-            <h2 id="formTitle" class="text-lg font-semibold text-slate-900">Tambah Periode</h2>
-
-            <button
-                type="button"
-                id="btnCloseForm"
-                class="text-sm font-medium text-slate-500 hover:text-slate-800">
-                Tutup
-            </button>
-        </div>
-
-        <form id="periodForm" class="grid gap-4 md:grid-cols-2">
-            <input type="hidden" id="periodId">
-
-            <div>
-                <label for="electionYear" class="mb-1 block text-sm font-medium text-slate-700">
+    {{-- Filter --}}
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
+            <div class="lg:col-span-5">
+                <label for="filterYear" class="mb-2 block text-sm font-bold text-slate-700">
                     Tahun Pemilihan
                 </label>
+
                 <input
                     type="number"
-                    id="electionYear"
-                    min="2000"
-                    max="2100"
-                    required
-                    placeholder="Contoh: 2026"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                    id="filterYear"
+                    placeholder="Cari tahun, contoh: 2026"
+                    class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-100"
+                >
             </div>
 
-            <div>
-                <label for="status" class="mb-1 block text-sm font-medium text-slate-700">
-                    Status Periode
+            <div class="lg:col-span-4">
+                <label for="filterStatus" class="mb-2 block text-sm font-bold text-slate-700">
+                    Status
                 </label>
+
                 <select
-                    id="status"
-                    required
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                    id="filterStatus"
+                    class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-100"
+                >
+                    <option value="">Semua Status</option>
                     <option value="draft">Draft</option>
-                    <option value="registration">Registration</option>
-                    <option value="interview">Interview</option>
-                    <option value="scoring">Scoring</option>
-                    <option value="finished">Finished</option>
+                    <option value="registration">Pendaftaran Dibuka</option>
+                    <option value="interview">Tahap Wawancara</option>
+                    <option value="scoring">Tahap Penilaian</option>
+                    <option value="finished">Selesai</option>
                 </select>
             </div>
 
-            <div>
-                <label for="registrationStart" class="mb-1 block text-sm font-medium text-slate-700">
-                    Mulai Pendaftaran
+            <div class="lg:col-span-3">
+                <label class="mb-2 block text-sm font-bold text-transparent">
+                    Aksi
                 </label>
-                <input
-                    type="datetime-local"
-                    id="registrationStart"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button
+                        type="button"
+                        id="btnFilter"
+                        class="inline-flex h-12 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                    >
+                        Filter
+                    </button>
+
+                    <button
+                        type="button"
+                        id="btnResetFilter"
+                        class="inline-flex h-12 items-center justify-center rounded-xl bg-slate-100 px-4 text-sm font-extrabold text-slate-700 transition hover:bg-slate-200"
+                    >
+                        Reset
+                    </button>
+                </div>
             </div>
-
-            <div>
-                <label for="registrationEnd" class="mb-1 block text-sm font-medium text-slate-700">
-                    Akhir Pendaftaran
-                </label>
-                <input
-                    type="datetime-local"
-                    id="registrationEnd"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-
-            <div>
-                <label for="interviewStart" class="mb-1 block text-sm font-medium text-slate-700">
-                    Mulai Wawancara
-                </label>
-                <input
-                    type="datetime-local"
-                    id="interviewStart"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-
-            <div>
-                <label for="interviewEnd" class="mb-1 block text-sm font-medium text-slate-700">
-                    Akhir Wawancara
-                </label>
-                <input
-                    type="datetime-local"
-                    id="interviewEnd"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-
-            <div class="md:col-span-2 flex justify-end gap-2 pt-2">
-                <button
-                    type="button"
-                    id="btnResetForm"
-                    class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                    Reset
-                </button>
-
-                <button
-                    type="submit"
-                    id="btnSubmitForm"
-                    class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
-                    Simpan Periode
-                </button>
-            </div>
-        </form>
-
-        <div id="formError" class="mt-4 hidden rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"></div>
-    </div>
-
-    {{-- Filter --}}
-    <div class="mb-4 grid gap-3 md:grid-cols-3">
-        <input
-            type="number"
-            id="filterYear"
-            placeholder="Cari tahun, contoh: 2026"
-            class="rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-
-        <select
-            id="filterStatus"
-            class="rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-            <option value="">Semua Status</option>
-            <option value="draft">Draft</option>
-            <option value="registration">Registration</option>
-            <option value="interview">Interview</option>
-            <option value="scoring">Scoring</option>
-            <option value="finished">Finished</option>
-        </select>
-
-        <div class="flex gap-2">
-            <button
-                type="button"
-                id="btnFilter"
-                class="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                Filter
-            </button>
-
-            <button
-                type="button"
-                id="btnResetFilter"
-                class="flex-1 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
-                Reset
-            </button>
         </div>
-    </div>
+    </section>
 
     {{-- Table --}}
-    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Tahun</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Pendaftaran</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Wawancara</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Status</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Aksi</th>
+                        <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                            Tahun
+                        </th>
+                        <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                            Pendaftaran
+                        </th>
+                        <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                            Wawancara
+                        </th>
+                        <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                            Status
+                        </th>
+                        <th class="px-5 py-4 text-right font-extrabold uppercase tracking-wide text-slate-500">
+                            Aksi
+                        </th>
                     </tr>
                 </thead>
 
-                <tbody id="periodTable" class="divide-y divide-slate-100">
+                <tbody id="periodTable" class="divide-y divide-slate-100 bg-white">
                     <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">
+                        <td colspan="5" class="px-5 py-8 text-center text-slate-500">
                             Memuat data periode...
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+    </section>
+
+    {{-- Modal Tambah/Edit --}}
+    <div id="periodFormModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 px-4 py-6">
+        <div class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+                <div>
+                    <h2 id="formTitle" class="text-xl font-extrabold text-slate-900">
+                        Tambah Periode
+                    </h2>
+
+                    <p id="formDescription" class="mt-1 text-sm leading-6 text-slate-500">
+                        Lengkapi data periode seleksi dengan benar.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="btnCloseFormModal"
+                    class="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                    aria-label="Tutup modal"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="periodForm">
+                <input type="hidden" id="periodId">
+
+                <div class="grid grid-cols-1 gap-5 px-6 py-5 md:grid-cols-2">
+                    <div>
+                        <label for="electionYear" class="mb-2 block text-sm font-bold text-slate-700">
+                            Tahun Pemilihan
+                        </label>
+
+                        <input
+                            type="number"
+                            id="electionYear"
+                            min="2000"
+                            max="2100"
+                            required
+                            placeholder="Contoh: 2026"
+                            class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-100"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="status" class="mb-2 block text-sm font-bold text-slate-700">
+                            Status Periode
+                        </label>
+
+                        <select
+                            id="status"
+                            required
+                            class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-100"
+                        >
+                            <option value="draft">Draft</option>
+                            <option value="registration">Pendaftaran Dibuka</option>
+                            <option value="interview">Tahap Wawancara</option>
+                            <option value="scoring">Tahap Penilaian</option>
+                            <option value="finished">Selesai</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="registrationStart" class="mb-2 block text-sm font-bold text-slate-700">
+                            Mulai Pendaftaran
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="registrationStart"
+                            class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-100"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="registrationEnd" class="mb-2 block text-sm font-bold text-slate-700">
+                            Akhir Pendaftaran
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="registrationEnd"
+                            class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-100"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="interviewStart" class="mb-2 block text-sm font-bold text-slate-700">
+                            Mulai Wawancara
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="interviewStart"
+                            class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-100"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="interviewEnd" class="mb-2 block text-sm font-bold text-slate-700">
+                            Akhir Wawancara
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="interviewEnd"
+                            class="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-100"
+                        >
+                    </div>
+
+                    <div id="formError" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 md:col-span-2"></div>
+                </div>
+
+                <div class="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+                    <button
+                        type="button"
+                        id="btnResetForm"
+                        class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                    >
+                        Reset
+                    </button>
+
+                    <button
+                        type="submit"
+                        id="btnSubmitForm"
+                        class="rounded-lg bg-blue-900 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                        Simpan Periode
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    {{-- Modal Hapus --}}
+    <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 px-4 py-6">
+        <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-900">
+                        Hapus Periode
+                    </h2>
+
+                    <p class="mt-1 text-sm leading-6 text-slate-500">
+                        Tindakan ini dapat memengaruhi data yang terkait dengan periode ini.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="btnCloseDeleteModal"
+                    class="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                    aria-label="Tutup modal"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="px-6 py-5">
+                <div class="flex gap-4">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none">
+                            <path d="M6 7H18M10 11V17M14 11V17M9 7L10 4H14L15 7M8 7L9 20H15L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <p id="deletePeriodText" class="text-sm font-semibold leading-6 text-slate-700">
+                            Yakin ingin menghapus periode ini?
+                        </p>
+
+                        <p class="mt-2 text-sm leading-6 text-slate-500">
+                            Jika periode sudah memiliki pendaftar atau data penilaian, penghapusan bisa gagal dari sistem.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+                <button
+                    type="button"
+                    id="btnCancelDelete"
+                    class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                >
+                    Batal
+                </button>
+
+                <button
+                    type="button"
+                    id="btnConfirmDelete"
+                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -220,6 +352,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     let periods = [];
+    let selectedDeleteId = null;
 
     const elements = {
         alertBox: document.getElementById('alertBox'),
@@ -229,8 +362,9 @@ document.addEventListener('DOMContentLoaded', function () {
         scoringPeriod: document.getElementById('scoringPeriod'),
         finishedPeriod: document.getElementById('finishedPeriod'),
 
-        formCard: document.getElementById('formCard'),
+        periodFormModal: document.getElementById('periodFormModal'),
         formTitle: document.getElementById('formTitle'),
+        formDescription: document.getElementById('formDescription'),
         periodForm: document.getElementById('periodForm'),
         formError: document.getElementById('formError'),
 
@@ -246,12 +380,18 @@ document.addEventListener('DOMContentLoaded', function () {
         filterStatus: document.getElementById('filterStatus'),
         periodTable: document.getElementById('periodTable'),
 
-        btnOpenForm: document.getElementById('btnOpenForm'),
-        btnCloseForm: document.getElementById('btnCloseForm'),
+        btnOpenCreateModal: document.getElementById('btnOpenCreateModal'),
+        btnCloseFormModal: document.getElementById('btnCloseFormModal'),
         btnResetForm: document.getElementById('btnResetForm'),
         btnSubmitForm: document.getElementById('btnSubmitForm'),
         btnFilter: document.getElementById('btnFilter'),
         btnResetFilter: document.getElementById('btnResetFilter'),
+
+        deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+        deletePeriodText: document.getElementById('deletePeriodText'),
+        btnCloseDeleteModal: document.getElementById('btnCloseDeleteModal'),
+        btnCancelDelete: document.getElementById('btnCancelDelete'),
+        btnConfirmDelete: document.getElementById('btnConfirmDelete'),
     };
 
     async function apiRequest(endpoint, options = {}) {
@@ -292,6 +432,346 @@ document.addEventListener('DOMContentLoaded', function () {
         return [];
     }
 
+    function loadPeriods() {
+        setLoadingTable();
+
+        const params = new URLSearchParams();
+        const year = elements.filterYear.value.trim();
+        const status = elements.filterStatus.value.trim();
+
+        if (year !== '') {
+            params.append('election_year', year);
+        }
+
+        if (status !== '') {
+            params.append('status', status);
+        }
+
+        params.append('per_page', '50');
+
+        apiRequest('/periods?' + params.toString(), {
+            method: 'GET',
+        })
+            .then(function (result) {
+                periods = extractPeriodItems(result);
+
+                renderStats();
+                renderTable();
+            })
+            .catch(function (error) {
+                console.error('Gagal memuat periode:', error);
+
+                periods = [];
+                renderStats();
+
+                elements.periodTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-red-600">
+                            ${escapeHtml(getErrorMessage(error, 'Data periode gagal dimuat.'))}
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+
+    function renderStats() {
+        elements.totalPeriod.textContent = periods.length;
+        elements.registrationPeriod.textContent = periods.filter(item => item.status === 'registration').length;
+        elements.scoringPeriod.textContent = periods.filter(item => item.status === 'scoring').length;
+        elements.finishedPeriod.textContent = periods.filter(item => item.status === 'finished').length;
+    }
+
+    function renderTable() {
+        if (!periods.length) {
+            elements.periodTable.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-5 py-8 text-center text-slate-500">
+                        Belum ada data periode seleksi.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        elements.periodTable.innerHTML = periods.map(function (period) {
+            return `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-5 py-5">
+                        <p class="text-base font-extrabold text-slate-900">
+                            ${escapeHtml(period.election_year || '-')}
+                        </p>
+                    </td>
+
+                    <td class="px-5 py-5 text-sm text-slate-600">
+                        <p class="font-semibold text-slate-800">
+                            ${formatDate(period.registration_start)}
+                        </p>
+                        <p class="mt-1 text-xs font-semibold text-slate-400">
+                            sampai ${formatDate(period.registration_end)}
+                        </p>
+                    </td>
+
+                    <td class="px-5 py-5 text-sm text-slate-600">
+                        <p class="font-semibold text-slate-800">
+                            ${formatDate(period.interview_start)}
+                        </p>
+                        <p class="mt-1 text-xs font-semibold text-slate-400">
+                            sampai ${formatDate(period.interview_end)}
+                        </p>
+                    </td>
+
+                    <td class="px-5 py-5">
+                        ${getStatusBadge(period.status)}
+                    </td>
+
+                    <td class="px-5 py-5 text-right">
+                        <div class="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                data-action="edit"
+                                data-id="${period.id}"
+                                class="inline-flex h-9 items-center justify-center rounded-lg border border-blue-200 px-3 text-sm font-extrabold text-blue-900 transition hover:bg-blue-50"
+                            >
+                                Edit
+                            </button>
+
+                            <button
+                                type="button"
+                                data-action="delete"
+                                data-id="${period.id}"
+                                class="inline-flex h-9 items-center justify-center rounded-lg border border-red-200 px-3 text-sm font-extrabold text-red-600 transition hover:bg-red-50"
+                            >
+                                Hapus
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function setLoadingTable(message = 'Memuat data periode...') {
+        elements.periodTable.innerHTML = `
+            <tr>
+                <td colspan="5" class="px-5 py-8 text-center text-slate-500">
+                    ${escapeHtml(message)}
+                </td>
+            </tr>
+        `;
+    }
+
+    function openCreateModal() {
+        resetForm();
+        elements.formTitle.textContent = 'Tambah Periode';
+        elements.formDescription.textContent = 'Lengkapi data periode seleksi dengan benar.';
+        elements.btnSubmitForm.textContent = 'Simpan Periode';
+        openModalElement(elements.periodFormModal);
+
+        setTimeout(function () {
+            elements.electionYear.focus();
+        }, 100);
+    }
+
+    function openEditModal(id) {
+        const period = periods.find(function (item) {
+            return Number(item.id) === Number(id);
+        });
+
+        if (!period) {
+            showAlert('Data periode tidak ditemukan pada tabel.', 'error');
+            return;
+        }
+
+        resetForm();
+
+        elements.formTitle.textContent = 'Edit Periode ' + (period.election_year || '');
+        elements.formDescription.textContent = 'Perbarui jadwal dan status periode seleksi.';
+        elements.btnSubmitForm.textContent = 'Update Periode';
+
+        elements.periodId.value = period.id;
+        elements.electionYear.value = period.election_year || '';
+        elements.status.value = period.status || 'draft';
+        elements.registrationStart.value = toInputDateTime(period.registration_start);
+        elements.registrationEnd.value = toInputDateTime(period.registration_end);
+        elements.interviewStart.value = toInputDateTime(period.interview_start);
+        elements.interviewEnd.value = toInputDateTime(period.interview_end);
+
+        openModalElement(elements.periodFormModal);
+    }
+
+    function closeFormModal() {
+        closeModalElement(elements.periodFormModal);
+        resetForm();
+    }
+
+    function resetForm() {
+        elements.periodId.value = '';
+        elements.periodForm.reset();
+        elements.status.value = 'draft';
+        clearFormError();
+    }
+
+    function savePeriod(event) {
+        event.preventDefault();
+        clearFormError();
+
+        const id = elements.periodId.value;
+
+        const payload = {
+            election_year: Number(elements.electionYear.value),
+            status: elements.status.value,
+            registration_start: normalizeDateTime(elements.registrationStart.value),
+            registration_end: normalizeDateTime(elements.registrationEnd.value),
+            interview_start: normalizeDateTime(elements.interviewStart.value),
+            interview_end: normalizeDateTime(elements.interviewEnd.value),
+        };
+
+        const endpoint = id ? '/periods/' + id : '/periods';
+        const method = id ? 'PUT' : 'POST';
+
+        elements.btnSubmitForm.disabled = true;
+        elements.btnSubmitForm.textContent = id ? 'Mengupdate...' : 'Menyimpan...';
+
+        apiRequest(endpoint, {
+            method: method,
+            body: JSON.stringify(payload),
+        })
+            .then(function () {
+                showAlert(id ? 'Periode berhasil diperbarui.' : 'Periode berhasil ditambahkan.', 'success');
+                closeFormModal();
+                loadPeriods();
+            })
+            .catch(function (error) {
+                console.error('Gagal menyimpan periode:', error);
+
+                showFormError(
+                    getErrorMessage(error, 'Periode gagal disimpan.'),
+                    getErrorValidation(error)
+                );
+            })
+            .finally(function () {
+                elements.btnSubmitForm.disabled = false;
+                elements.btnSubmitForm.textContent = id ? 'Update Periode' : 'Simpan Periode';
+            });
+    }
+
+    function openDeleteModal(id) {
+        const period = periods.find(function (item) {
+            return Number(item.id) === Number(id);
+        });
+
+        if (!period) {
+            showAlert('Data periode tidak ditemukan pada tabel.', 'error');
+            return;
+        }
+
+        selectedDeleteId = id;
+        elements.deletePeriodText.textContent = `Yakin ingin menghapus periode ${period.election_year}?`;
+        openModalElement(elements.deleteConfirmModal);
+    }
+
+    function closeDeleteModal() {
+        selectedDeleteId = null;
+        closeModalElement(elements.deleteConfirmModal);
+        elements.btnConfirmDelete.disabled = false;
+        elements.btnConfirmDelete.textContent = 'Ya, Hapus';
+    }
+
+    function confirmDelete() {
+        if (!selectedDeleteId) {
+            return;
+        }
+
+        elements.btnConfirmDelete.disabled = true;
+        elements.btnConfirmDelete.textContent = 'Menghapus...';
+
+        apiRequest('/periods/' + selectedDeleteId, {
+            method: 'DELETE',
+        })
+            .then(function () {
+                showAlert('Periode berhasil dihapus.', 'success');
+                closeDeleteModal();
+                loadPeriods();
+            })
+            .catch(function (error) {
+                console.error('Gagal menghapus periode:', error);
+                showAlert(getErrorMessage(error, 'Periode gagal dihapus.'), 'error');
+
+                elements.btnConfirmDelete.disabled = false;
+                elements.btnConfirmDelete.textContent = 'Ya, Hapus';
+            });
+    }
+
+    function resetFilter() {
+        elements.filterYear.value = '';
+        elements.filterStatus.value = '';
+        loadPeriods();
+    }
+
+    function openModalElement(modal) {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeModalElement(modal) {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function showAlert(message, type = 'success') {
+        const classes = {
+            success: 'border-green-200 bg-green-50 text-green-700',
+            error: 'border-red-200 bg-red-50 text-red-700',
+            info: 'border-blue-200 bg-blue-50 text-blue-700',
+        };
+
+        elements.alertBox.className = 'rounded-xl border px-4 py-3 text-sm font-semibold ' + (classes[type] || classes.info);
+        elements.alertBox.textContent = message;
+        elements.alertBox.classList.remove('hidden');
+
+        setTimeout(function () {
+            elements.alertBox.classList.add('hidden');
+        }, 3500);
+    }
+
+    function showFormError(message, errors = null) {
+        let html = escapeHtml(message || 'Terjadi kesalahan.');
+
+        if (errors) {
+            html += '<ul class="mt-2 list-disc pl-5">';
+
+            Object.values(errors).forEach(function (messages) {
+                if (Array.isArray(messages)) {
+                    messages.forEach(function (item) {
+                        html += `<li>${escapeHtml(item)}</li>`;
+                    });
+
+                    return;
+                }
+
+                html += `<li>${escapeHtml(messages)}</li>`;
+            });
+
+            html += '</ul>';
+        }
+
+        elements.formError.innerHTML = html;
+        elements.formError.classList.remove('hidden');
+    }
+
+    function clearFormError() {
+        elements.formError.innerHTML = '';
+        elements.formError.classList.add('hidden');
+    }
+
     function getErrorMessage(error, fallback = 'Terjadi kesalahan.') {
         if (typeof error === 'string') {
             return error;
@@ -316,61 +796,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
-    function showAlert(message, type = 'success') {
-        const classes = {
-            success: 'bg-green-50 text-green-700 border border-green-200',
-            error: 'bg-red-50 text-red-700 border border-red-200',
-            info: 'bg-blue-50 text-blue-700 border border-blue-200',
-        };
-
-        elements.alertBox.className = 'mb-5 rounded-xl px-4 py-3 text-sm ' + (classes[type] || classes.info);
-        elements.alertBox.textContent = message;
-        elements.alertBox.classList.remove('hidden');
-
-        setTimeout(function () {
-            elements.alertBox.classList.add('hidden');
-        }, 3500);
-    }
-
-    function showFormError(message, errors = null) {
-        let html = message || 'Terjadi kesalahan.';
-
-        if (errors) {
-            html += '<ul class="mt-2 list-disc pl-5">';
-
-            Object.values(errors).forEach(function (messages) {
-                if (Array.isArray(messages)) {
-                    messages.forEach(function (item) {
-                        html += `<li>${item}</li>`;
-                    });
-                    return;
-                }
-
-                html += `<li>${messages}</li>`;
-            });
-
-            html += '</ul>';
-        }
-
-        elements.formError.innerHTML = html;
-        elements.formError.classList.remove('hidden');
-    }
-
-    function clearFormError() {
-        elements.formError.innerHTML = '';
-        elements.formError.classList.add('hidden');
-    }
-
-    function setLoadingTable(message = 'Memuat data periode...') {
-        elements.periodTable.innerHTML = `
-            <tr>
-                <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">
-                    ${message}
-                </td>
-            </tr>
-        `;
-    }
-
     function formatDate(value) {
         if (!value) {
             return '-';
@@ -383,8 +808,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         return date.toLocaleString('id-ID', {
-            dateStyle: 'medium',
-            timeStyle: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
         });
     }
 
@@ -417,10 +845,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function getStatusLabel(status) {
         const labels = {
             draft: 'Draft',
-            registration: 'Registration',
-            interview: 'Interview',
-            scoring: 'Scoring',
-            finished: 'Finished',
+            registration: 'Pendaftaran Dibuka',
+            interview: 'Tahap Wawancara',
+            scoring: 'Tahap Penilaian',
+            finished: 'Selesai',
         };
 
         return labels[status] || status || '-';
@@ -428,252 +856,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function getStatusBadge(status) {
         const classes = {
-            draft: 'bg-slate-100 text-slate-700',
-            registration: 'bg-green-100 text-green-700',
-            interview: 'bg-blue-100 text-blue-700',
-            scoring: 'bg-amber-100 text-amber-700',
-            finished: 'bg-purple-100 text-purple-700',
+            draft: 'border-slate-200 bg-slate-100 text-slate-700',
+            registration: 'border-green-200 bg-green-100 text-green-700',
+            interview: 'border-blue-200 bg-blue-100 text-blue-700',
+            scoring: 'border-amber-200 bg-amber-100 text-amber-700',
+            finished: 'border-purple-200 bg-purple-100 text-purple-700',
         };
 
         return `
-            <span class="rounded-full px-3 py-1 text-xs font-semibold ${classes[status] || 'bg-slate-100 text-slate-700'}">
-                ${getStatusLabel(status)}
+            <span class="inline-flex rounded-full border px-3 py-1 text-xs font-extrabold ${classes[status] || 'border-slate-200 bg-slate-100 text-slate-700'}">
+                ${escapeHtml(getStatusLabel(status))}
             </span>
         `;
     }
 
-    function renderStats() {
-        elements.totalPeriod.textContent = periods.length;
-        elements.registrationPeriod.textContent = periods.filter(item => item.status === 'registration').length;
-        elements.scoringPeriod.textContent = periods.filter(item => item.status === 'scoring').length;
-        elements.finishedPeriod.textContent = periods.filter(item => item.status === 'finished').length;
+    function escapeHtml(value) {
+        return String(value ?? '-')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
     }
 
-    function renderTable() {
-        if (!periods.length) {
-            elements.periodTable.innerHTML = `
-                <tr>
-                    <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">
-                        Belum ada data periode seleksi.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        elements.periodTable.innerHTML = periods.map(function (period) {
-            return `
-                <tr class="hover:bg-slate-50">
-                    <td class="px-4 py-4 text-sm font-semibold text-slate-900">
-                        ${period.election_year || '-'}
-                    </td>
-
-                    <td class="px-4 py-4 text-sm text-slate-600">
-                        ${formatDate(period.registration_start)}
-                        <br>
-                        <span class="text-xs text-slate-400">
-                            sampai ${formatDate(period.registration_end)}
-                        </span>
-                    </td>
-
-                    <td class="px-4 py-4 text-sm text-slate-600">
-                        ${formatDate(period.interview_start)}
-                        <br>
-                        <span class="text-xs text-slate-400">
-                            sampai ${formatDate(period.interview_end)}
-                        </span>
-                    </td>
-
-                    <td class="px-4 py-4 text-sm">
-                        ${getStatusBadge(period.status)}
-                    </td>
-
-                    <td class="px-4 py-4 text-right text-sm">
-                        <button
-                            type="button"
-                            data-action="edit"
-                            data-id="${period.id}"
-                            class="mr-2 font-semibold text-blue-600 hover:text-blue-800">
-                            Edit
-                        </button>
-
-                        <button
-                            type="button"
-                            data-action="delete"
-                            data-id="${period.id}"
-                            class="font-semibold text-red-600 hover:text-red-800">
-                            Hapus
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    async function loadPeriods() {
-        setLoadingTable();
-
-        const params = new URLSearchParams();
-
-        const year = elements.filterYear.value.trim();
-        const status = elements.filterStatus.value.trim();
-
-        if (year !== '') {
-            params.append('election_year', year);
-        }
-
-        if (status !== '') {
-            params.append('status', status);
-        }
-
-        params.append('per_page', '50');
-
-        try {
-            const result = await apiRequest('/periods?' + params.toString(), {
-                method: 'GET',
-            });
-
-            periods = extractPeriodItems(result);
-
-            renderStats();
-            renderTable();
-        } catch (error) {
-            console.error('Gagal memuat periode:', error);
-
-            periods = [];
-            renderStats();
-
-            elements.periodTable.innerHTML = `
-                <tr>
-                    <td colspan="5" class="px-4 py-6 text-center text-sm text-red-600">
-                        ${getErrorMessage(error, 'Data periode gagal dimuat.')}
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    function openForm() {
-        clearFormError();
-        elements.formCard.classList.remove('hidden');
-        elements.electionYear.focus();
-    }
-
-    function closeForm() {
-        elements.formCard.classList.add('hidden');
-        resetForm();
-    }
-
-    function resetForm() {
-        elements.periodId.value = '';
-        elements.periodForm.reset();
-        elements.status.value = 'draft';
-        elements.formTitle.textContent = 'Tambah Periode';
-        elements.btnSubmitForm.textContent = 'Simpan Periode';
-        clearFormError();
-    }
-
-    function editPeriod(id) {
-        const period = periods.find(function (item) {
-            return Number(item.id) === Number(id);
-        });
-
-        if (!period) {
-            showAlert('Data periode tidak ditemukan pada tabel.', 'error');
-            return;
-        }
-
-        openForm();
-
-        elements.formTitle.textContent = 'Edit Periode ' + period.election_year;
-        elements.btnSubmitForm.textContent = 'Update Periode';
-
-        elements.periodId.value = period.id;
-        elements.electionYear.value = period.election_year || '';
-        elements.status.value = period.status || 'draft';
-        elements.registrationStart.value = toInputDateTime(period.registration_start);
-        elements.registrationEnd.value = toInputDateTime(period.registration_end);
-        elements.interviewStart.value = toInputDateTime(period.interview_start);
-        elements.interviewEnd.value = toInputDateTime(period.interview_end);
-
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-        });
-    }
-
-    async function savePeriod(event) {
-        event.preventDefault();
-        clearFormError();
-
-        const id = elements.periodId.value;
-
-        const payload = {
-            election_year: Number(elements.electionYear.value),
-            status: elements.status.value,
-            registration_start: normalizeDateTime(elements.registrationStart.value),
-            registration_end: normalizeDateTime(elements.registrationEnd.value),
-            interview_start: normalizeDateTime(elements.interviewStart.value),
-            interview_end: normalizeDateTime(elements.interviewEnd.value),
-        };
-
-        const endpoint = id ? '/periods/' + id : '/periods';
-        const method = id ? 'PUT' : 'POST';
-
-        elements.btnSubmitForm.disabled = true;
-        elements.btnSubmitForm.textContent = id ? 'Mengupdate...' : 'Menyimpan...';
-
-        try {
-            await apiRequest(endpoint, {
-                method: method,
-                body: JSON.stringify(payload),
-            });
-
-            showAlert(id ? 'Periode berhasil diperbarui.' : 'Periode berhasil ditambahkan.', 'success');
-
-            closeForm();
-            await loadPeriods();
-        } catch (error) {
-            console.error('Gagal menyimpan periode:', error);
-
-            showFormError(
-                getErrorMessage(error, 'Periode gagal disimpan.'),
-                getErrorValidation(error)
-            );
-        } finally {
-            elements.btnSubmitForm.disabled = false;
-            elements.btnSubmitForm.textContent = id ? 'Update Periode' : 'Simpan Periode';
-        }
-    }
-
-    async function deletePeriod(id) {
-        const confirmed = confirm('Yakin ingin menghapus periode ini? Data terkait periode ini dapat ikut terdampak.');
-
-        if (!confirmed) {
-            return;
-        }
-
-        try {
-            await apiRequest('/periods/' + id, {
-                method: 'DELETE',
-            });
-
-            showAlert('Periode berhasil dihapus.', 'success');
-            await loadPeriods();
-        } catch (error) {
-            console.error('Gagal menghapus periode:', error);
-            showAlert(getErrorMessage(error, 'Periode gagal dihapus.'), 'error');
-        }
-    }
-
-    function resetFilter() {
-        elements.filterYear.value = '';
-        elements.filterStatus.value = '';
-        loadPeriods();
-    }
-
-    elements.btnOpenForm?.addEventListener('click', openForm);
-    elements.btnCloseForm?.addEventListener('click', closeForm);
+    elements.btnOpenCreateModal?.addEventListener('click', openCreateModal);
+    elements.btnCloseFormModal?.addEventListener('click', closeFormModal);
     elements.btnResetForm?.addEventListener('click', resetForm);
     elements.periodForm?.addEventListener('submit', savePeriod);
 
@@ -699,11 +906,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const id = button.dataset.id;
 
         if (action === 'edit') {
-            editPeriod(id);
+            openEditModal(id);
         }
 
         if (action === 'delete') {
-            deletePeriod(id);
+            openDeleteModal(id);
+        }
+    });
+
+    elements.btnCloseDeleteModal?.addEventListener('click', closeDeleteModal);
+    elements.btnCancelDelete?.addEventListener('click', closeDeleteModal);
+    elements.btnConfirmDelete?.addEventListener('click', confirmDelete);
+
+    elements.periodFormModal?.addEventListener('click', function (event) {
+        if (event.target === elements.periodFormModal) {
+            closeFormModal();
+        }
+    });
+
+    elements.deleteConfirmModal?.addEventListener('click', function (event) {
+        if (event.target === elements.deleteConfirmModal) {
+            closeDeleteModal();
         }
     });
 

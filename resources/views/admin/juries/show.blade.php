@@ -1,279 +1,628 @@
 @extends('layouts.admin')
 
 @section('content')
-    <section class="mb-7">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-                <div class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-500">
-                    <a href="{{ route('admin.juries.index') }}" class="hover:text-[#00288E]">Akun Juri</a>
-                    <span>/</span>
-                    <span class="text-[#00288E]">Detail Juri</span>
-                </div>
+<div class="space-y-6">
+    {{-- Header --}}
+    <section class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <div class="mb-3 flex items-center gap-2 text-sm font-bold text-slate-500">
+                <a href="{{ route('admin.juries.index') }}" class="hover:text-blue-900">
+                    Akun Juri
+                </a>
 
-                <h1 class="text-[34px] font-extrabold leading-none tracking-tight text-[#00288E]">
-                    Detail Akun Juri
-                </h1>
+                <span>/</span>
 
-                <p class="mt-2 text-sm font-medium text-slate-500">
-                    Lihat informasi akun juri dan kriteria yang ditugaskan.
-                </p>
+                <span class="text-blue-900">
+                    Detail Juri
+                </span>
             </div>
 
-            <div class="flex items-center gap-2">
-                <x-button href="{{ route('admin.juries.index') }}" variant="secondary">
-                    Kembali
-                </x-button>
+            <h1 class="text-4xl font-extrabold tracking-tight text-blue-900">
+                Detail Akun Juri
+            </h1>
 
-                <x-button href="{{ route('admin.juries.edit', $juryId) }}">
-                    Edit Juri
-                </x-button>
-            </div>
+            <p class="mt-2 text-sm font-semibold leading-6 text-slate-500">
+                Lihat informasi akun juri, status akses, dan kriteria penilaian yang ditugaskan.
+            </p>
+        </div>
+
+        <div class="flex flex-col gap-3 sm:flex-row">
+            <a
+                href="{{ route('admin.juries.index') }}"
+                class="inline-flex h-12 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+            >
+                Kembali
+            </a>
+
+            <a
+                href="{{ route('admin.juries.edit', $juryId) }}"
+                class="inline-flex h-12 items-center justify-center rounded-xl bg-blue-900 px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-800"
+            >
+                Edit Juri
+            </a>
         </div>
     </section>
 
-    <div id="pageAlert" class="mb-5 hidden rounded-md border px-4 py-3 text-sm"></div>
+    {{-- Alert --}}
+    <div id="pageAlert" class="hidden rounded-xl border px-4 py-3 text-sm font-semibold"></div>
 
-    <div id="loadingState">
-        <x-card>
-            <div class="py-8 text-center text-sm text-slate-500">
-                Memuat detail akun juri...
-            </div>
-        </x-card>
-    </div>
+    {{-- Loading --}}
+    <section id="loadingState" class="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <div class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-900"></div>
 
-    <div id="detailContent" class="hidden space-y-6">
-        <section class="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <x-card>
-                <p class="text-sm font-semibold text-slate-700">Status Akun</p>
-                <div id="juryStatus" class="mt-3"></div>
-            </x-card>
+        <p class="mt-4 text-sm font-semibold text-slate-500">
+            Memuat detail akun juri...
+        </p>
+    </section>
 
-            <x-card>
-                <p class="text-sm font-semibold text-slate-700">Total Kriteria</p>
-                <h2 id="criteriaCount" class="mt-2 text-3xl font-extrabold text-slate-900">0</h2>
-            </x-card>
-
-            <x-card>
-                <p class="text-sm font-semibold text-slate-700">Role</p>
-                <h2 id="juryRole" class="mt-2 text-3xl font-extrabold text-slate-900">-</h2>
-            </x-card>
-        </section>
-
-        <x-card>
-            <div class="mb-5 border-b border-slate-200 pb-4">
-                <h2 class="text-lg font-extrabold text-slate-900">
-                    Informasi Akun
-                </h2>
-                <p class="mt-1 text-sm text-slate-500">
-                    Data akun juri yang digunakan untuk login dan akses penilaian.
+    {{-- Detail --}}
+    <section id="detailContent" class="hidden space-y-6">
+        {{-- Summary Cards --}}
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-semibold text-slate-500">
+                    Status Akun
                 </p>
-            </div>
 
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                <div>
-                    <p class="text-xs font-bold uppercase text-slate-500">Nama Juri</p>
-                    <p id="juryName" class="mt-1 text-base font-extrabold text-slate-900">-</p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-bold uppercase text-slate-500">Email</p>
-                    <p id="juryEmail" class="mt-1 text-base font-semibold text-slate-700">-</p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-bold uppercase text-slate-500">Nomor HP</p>
-                    <p id="juryPhone" class="mt-1 text-base font-semibold text-slate-700">-</p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-bold uppercase text-slate-500">ID Juri</p>
-                    <p id="juryIdText" class="mt-1 text-base font-semibold text-slate-700">-</p>
+                <div id="juryStatus" class="mt-3">
+                    -
                 </div>
             </div>
-        </x-card>
 
-        <x-card padding="p-0">
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-semibold text-slate-500">
+                    Total Kriteria
+                </p>
+
+                <h2 id="criteriaCount" class="mt-2 text-4xl font-extrabold text-blue-900">
+                    0
+                </h2>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-semibold text-slate-500">
+                    Role
+                </p>
+
+                <h2 id="juryRole" class="mt-2 text-4xl font-extrabold text-slate-900">
+                    -
+                </h2>
+            </div>
+        </div>
+
+        {{-- Profile --}}
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+            <aside class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col items-center text-center">
+                    <div id="juryAvatar" class="flex h-24 w-24 items-center justify-center rounded-2xl bg-blue-100 text-3xl font-extrabold text-blue-900">
+                        -
+                    </div>
+
+                    <h2 id="juryNameTitle" class="mt-5 text-2xl font-extrabold text-slate-900">
+                        -
+                    </h2>
+
+                    <p id="juryEmailTitle" class="mt-1 text-sm font-semibold text-slate-500">
+                        -
+                    </p>
+                </div>
+
+                <div class="mt-6 border-t border-slate-100 pt-5">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                ID Juri
+                            </p>
+
+                            <p id="juryIdText" class="mt-1 text-sm font-bold text-slate-800">
+                                -
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Dibuat Pada
+                            </p>
+
+                            <p id="juryCreatedAt" class="mt-1 text-sm font-bold text-slate-800">
+                                -
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Terakhir Diperbarui
+                            </p>
+
+                            <p id="juryUpdatedAt" class="mt-1 text-sm font-bold text-slate-800">
+                                -
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="space-y-6 xl:col-span-2">
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="border-b border-slate-200 pb-4">
+                        <h2 class="text-xl font-extrabold text-slate-900">
+                            Informasi Akun
+                        </h2>
+
+                        <p class="mt-1 text-sm leading-6 text-slate-500">
+                            Data akun yang digunakan juri untuk login dan mengakses halaman penilaian.
+                        </p>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <div>
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Nama Juri
+                            </p>
+
+                            <p id="juryName" class="mt-1 text-base font-extrabold text-slate-900">
+                                -
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Email
+                            </p>
+
+                            <p id="juryEmail" class="mt-1 text-base font-semibold text-slate-700">
+                                -
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Nomor HP
+                            </p>
+
+                            <p id="juryPhone" class="mt-1 text-base font-semibold text-slate-700">
+                                -
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Hak Akses
+                            </p>
+
+                            <p id="juryRoleText" class="mt-1 text-base font-semibold text-slate-700">
+                                -
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row md:items-start md:justify-between">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-slate-900">
+                                Ringkasan Penugasan
+                            </h2>
+
+                            <p class="mt-1 text-sm leading-6 text-slate-500">
+                                Ringkasan kriteria yang dapat dinilai oleh juri ini.
+                            </p>
+                        </div>
+
+                        <div id="assignmentStatusBadge"></div>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div class="rounded-xl bg-slate-50 p-4">
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Kriteria Aktif
+                            </p>
+
+                            <p id="activeCriteriaCount" class="mt-2 text-2xl font-extrabold text-slate-900">
+                                0
+                            </p>
+                        </div>
+
+                        <div class="rounded-xl bg-slate-50 p-4">
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Benefit
+                            </p>
+
+                            <p id="benefitCriteriaCount" class="mt-2 text-2xl font-extrabold text-slate-900">
+                                0
+                            </p>
+                        </div>
+
+                        <div class="rounded-xl bg-slate-50 p-4">
+                            <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Cost
+                            </p>
+
+                            <p id="costCriteriaCount" class="mt-2 text-2xl font-extrabold text-slate-900">
+                                0
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {{-- Criteria Table --}}
+        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-200 px-5 py-4">
-                <h2 class="text-lg font-extrabold text-slate-900">
+                <h2 class="text-xl font-extrabold text-slate-900">
                     Kriteria yang Ditugaskan
                 </h2>
-                <p class="mt-1 text-sm text-slate-500">
-                    Daftar kriteria yang dapat dinilai oleh juri ini.
+
+                <p class="mt-1 text-sm leading-6 text-slate-500">
+                    Daftar kriteria penilaian yang dapat diisi oleh juri ini.
                 </p>
             </div>
 
-            <x-table
-                :headers="['Kode', 'Nama Kriteria', 'Bobot', 'Tipe', 'Rentang Nilai', 'Status']"
-                tbody-id="criteriaTableBody"
-                class="rounded-none border-0 shadow-none"
-            >
-                <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-slate-500">
-                        Memuat data kriteria...
-                    </td>
-                </tr>
-            </x-table>
-        </x-card>
-    </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                                Kode
+                            </th>
+                            <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                                Nama Kriteria
+                            </th>
+                            <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                                Bobot
+                            </th>
+                            <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                                Tipe
+                            </th>
+                            <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                                Rentang Nilai
+                            </th>
+                            <th class="px-5 py-4 text-left font-extrabold uppercase tracking-wide text-slate-500">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="criteriaTableBody" class="divide-y divide-slate-100 bg-white">
+                        <tr>
+                            <td colspan="6" class="px-5 py-8 text-center text-slate-500">
+                                Memuat data kriteria...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </section>
+</div>
 @endsection
 
 @push('scripts')
-    <script>
-        const juryId = @json($juryId);
+<script>
+    const juryId = @json($juryId);
 
-        document.addEventListener('DOMContentLoaded', function () {
-            loadJuryDetail();
-        });
+    document.addEventListener('DOMContentLoaded', function () {
+        loadJuryDetail();
+    });
 
-        async function loadJuryDetail() {
-            try {
-                const result = await DutaAdmin.request(`/juries/${juryId}`);
-                const jury = result?.data;
+    async function loadJuryDetail() {
+        showLoading();
 
-                if (!jury) {
-                    throw new Error('Data juri tidak ditemukan.');
-                }
+        try {
+            const result = await DutaAdmin.request(`/juries/${juryId}`);
+            const jury = normalizeJury(result);
 
-                renderJuryDetail(jury);
-
-                document.getElementById('loadingState').classList.add('hidden');
-                document.getElementById('detailContent').classList.remove('hidden');
-            } catch (error) {
-                document.getElementById('loadingState').innerHTML = `
-                    <x-card>
-                        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                            ${escapeHtml(getErrorMessage(error))}
-                        </div>
-                    </x-card>
-                `;
-            }
-        }
-
-        function renderJuryDetail(jury) {
-            const criteria = jury.criteria || [];
-
-            setText('juryName', jury.name || '-');
-            setText('juryEmail', jury.email || '-');
-            setText('juryPhone', jury.phone || '-');
-            setText('juryIdText', jury.id || '-');
-            setText('criteriaCount', criteria.length);
-            setText('juryRole', jury.role || 'juri');
-
-            document.getElementById('juryStatus').innerHTML = renderStatusBadge(jury.is_active);
-
-            renderCriteriaTable(criteria);
-        }
-
-        function renderCriteriaTable(criteria) {
-            const tableBody = document.getElementById('criteriaTableBody');
-
-            if (!criteria.length) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-slate-500">
-                            Belum ada kriteria yang ditugaskan kepada juri ini.
-                        </td>
-                    </tr>
-                `;
-                return;
+            if (!jury) {
+                throw new Error('Data juri tidak ditemukan.');
             }
 
-            tableBody.innerHTML = criteria.map(item => `
+            renderJuryDetail(jury);
+            hideLoading();
+        } catch (error) {
+            console.error('Gagal memuat detail juri:', error);
+            renderErrorState(getErrorMessage(error, 'Detail akun juri gagal dimuat.'));
+        }
+    }
+
+    function normalizeJury(result) {
+        if (!result) {
+            return null;
+        }
+
+        if (result?.data?.jury) {
+            return result.data.jury;
+        }
+
+        if (result?.data) {
+            return result.data;
+        }
+
+        if (result?.jury) {
+            return result.jury;
+        }
+
+        return result;
+    }
+
+    function getCriteria(jury) {
+        if (Array.isArray(jury.criteria)) {
+            return jury.criteria;
+        }
+
+        if (Array.isArray(jury.assigned_criteria)) {
+            return jury.assigned_criteria;
+        }
+
+        if (Array.isArray(jury.criteria_data)) {
+            return jury.criteria_data;
+        }
+
+        return [];
+    }
+
+    function renderJuryDetail(jury) {
+        const criteria = getCriteria(jury);
+        const activeCriteria = criteria.filter(item => isActiveValue(item.is_active));
+        const benefitCriteria = criteria.filter(item => String(item.type || '').toLowerCase() === 'benefit');
+        const costCriteria = criteria.filter(item => String(item.type || '').toLowerCase() === 'cost');
+
+        setText('juryName', jury.name || '-');
+        setText('juryNameTitle', jury.name || '-');
+        setText('juryEmail', jury.email || '-');
+        setText('juryEmailTitle', jury.email || '-');
+        setText('juryPhone', jury.phone || '-');
+        setText('juryIdText', jury.id || '-');
+        setText('juryRole', formatRole(jury.role));
+        setText('juryRoleText', formatRole(jury.role));
+        setText('criteriaCount', formatNumber(criteria.length));
+        setText('activeCriteriaCount', formatNumber(activeCriteria.length));
+        setText('benefitCriteriaCount', formatNumber(benefitCriteria.length));
+        setText('costCriteriaCount', formatNumber(costCriteria.length));
+        setText('juryCreatedAt', formatDateTime(jury.created_at));
+        setText('juryUpdatedAt', formatDateTime(jury.updated_at));
+
+        setText('juryAvatar', getInitials(jury.name || 'Juri'));
+
+        setHtml('juryStatus', renderStatusBadge(jury.is_active));
+        setHtml('assignmentStatusBadge', renderAssignmentBadge(criteria.length));
+
+        renderCriteriaTable(criteria);
+    }
+
+    function renderCriteriaTable(criteria) {
+        const tableBody = document.getElementById('criteriaTableBody');
+
+        if (!tableBody) {
+            console.warn('Element criteriaTableBody tidak ditemukan.');
+            return;
+        }
+
+        if (!criteria.length) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-5 py-8 text-center text-slate-500">
+                        Belum ada kriteria yang ditugaskan kepada juri ini.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tableBody.innerHTML = criteria.map(function (item) {
+            return `
                 <tr class="hover:bg-slate-50">
-                    <td class="px-6 py-4 font-extrabold text-[#00288E]">
-                        ${escapeHtml(item.code || '-')}
+                    <td class="px-5 py-4">
+                        <span class="inline-flex rounded-lg bg-blue-100 px-3 py-1 text-xs font-extrabold text-blue-900">
+                            ${escapeHtml(item.code || '-')}
+                        </span>
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-slate-900">
-                        ${escapeHtml(item.name || '-')}
+                    <td class="px-5 py-4">
+                        <p class="font-extrabold text-slate-900">
+                            ${escapeHtml(item.name || '-')}
+                        </p>
                     </td>
 
-                    <td class="px-6 py-4 text-slate-700">
+                    <td class="px-5 py-4 font-semibold text-slate-700">
                         ${formatWeight(item.weight)}
                     </td>
 
-                    <td class="px-6 py-4">
+                    <td class="px-5 py-4">
                         ${renderTypeBadge(item.type)}
                     </td>
 
-                    <td class="px-6 py-4 text-slate-700">
-                        ${escapeHtml(item.min_score ?? '0')} - ${escapeHtml(item.max_score ?? '100')}
+                    <td class="px-5 py-4 font-semibold text-slate-700">
+                        ${escapeHtml(item.min_score ?? '0')} sampai ${escapeHtml(item.max_score ?? '100')}
                     </td>
 
-                    <td class="px-6 py-4">
+                    <td class="px-5 py-4">
                         ${renderActiveBadge(item.is_active)}
                     </td>
                 </tr>
-            `).join('');
+            `;
+        }).join('');
+    }
+
+    function showLoading() {
+        document.getElementById('loadingState')?.classList.remove('hidden');
+        document.getElementById('detailContent')?.classList.add('hidden');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingState')?.classList.add('hidden');
+        document.getElementById('detailContent')?.classList.remove('hidden');
+    }
+
+    function renderErrorState(message) {
+        const loadingState = document.getElementById('loadingState');
+
+        if (!loadingState) {
+            return;
         }
 
-        function renderStatusBadge(isActive) {
-            return isActiveValue(isActive)
-                ? `<span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">Aktif</span>`
-                : `<span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">Nonaktif</span>`;
+        loadingState.innerHTML = `
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
+                !
+            </div>
+
+            <p class="mt-4 text-sm font-semibold text-red-600">
+                ${escapeHtml(message)}
+            </p>
+
+            <a
+                href="{{ route('admin.juries.index') }}"
+                class="mt-5 inline-flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            >
+                Kembali ke Akun Juri
+            </a>
+        `;
+
+        loadingState.className = 'rounded-2xl border border-red-200 bg-white p-8 text-center shadow-sm';
+    }
+
+    function renderStatusBadge(isActive) {
+        return isActiveValue(isActive)
+            ? `<span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-extrabold text-green-700">Aktif</span>`
+            : `<span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-extrabold text-red-700">Nonaktif</span>`;
+    }
+
+    function renderAssignmentBadge(count) {
+        if (Number(count || 0) > 0) {
+            return `
+                <span class="inline-flex rounded-full border border-green-200 bg-green-100 px-3 py-1 text-xs font-extrabold text-green-700">
+                    Sudah Ditugaskan
+                </span>
+            `;
         }
 
-        function renderActiveBadge(isActive) {
-            return isActiveValue(isActive)
-                ? `<span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">Aktif</span>`
-                : `<span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">Nonaktif</span>`;
+        return `
+            <span class="inline-flex rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-xs font-extrabold text-amber-700">
+                Belum Ada Kriteria
+            </span>
+        `;
+    }
+
+    function renderActiveBadge(isActive) {
+        return isActiveValue(isActive)
+            ? `<span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-extrabold text-green-700">Aktif</span>`
+            : `<span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-600">Nonaktif</span>`;
+    }
+
+    function renderTypeBadge(type) {
+        const value = String(type || '').toLowerCase();
+
+        if (value === 'benefit') {
+            return `<span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-extrabold text-blue-700">Benefit</span>`;
         }
 
-        function renderTypeBadge(type) {
-            const value = String(type || '-').toLowerCase();
-
-            if (value === 'benefit') {
-                return `<span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">Benefit</span>`;
-            }
-
-            if (value === 'cost') {
-                return `<span class="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-bold text-yellow-700">Cost</span>`;
-            }
-
-            return `<span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">-</span>`;
+        if (value === 'cost') {
+            return `<span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-extrabold text-amber-700">Cost</span>`;
         }
 
-        function formatWeight(value) {
-            const number = Number(value || 0);
+        return `<span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold text-slate-600">-</span>`;
+    }
 
-            if (number <= 1) {
-                return `${formatNumber(number * 100)}%`;
-            }
+    function formatWeight(value) {
+        const number = Number(value || 0);
 
-            return `${formatNumber(number)}%`;
+        if (number <= 1) {
+            return `${formatNumber(number * 100)}%`;
         }
 
-        function isActiveValue(value) {
-            return value === true || value === 1 || value === '1';
+        return `${formatNumber(number)}%`;
+    }
+
+    function formatRole(role) {
+        const value = String(role || 'juri').toLowerCase();
+
+        if (value === 'juri') {
+            return 'Juri';
         }
 
-        function formatNumber(value) {
-            const number = Number(value || 0);
-
-            return new Intl.NumberFormat('id-ID', {
-                maximumFractionDigits: 2,
-            }).format(number);
+        if (value === 'admin') {
+            return 'Admin';
         }
 
-        function setText(id, value) {
-            const element = document.getElementById(id);
+        return value || '-';
+    }
 
-            if (element) {
-                element.textContent = value;
-            }
+    function isActiveValue(value) {
+        return value === true || value === 1 || value === '1';
+    }
+
+    function formatNumber(value) {
+        return new Intl.NumberFormat('id-ID', {
+            maximumFractionDigits: 2,
+        }).format(Number(value || 0));
+    }
+
+    function formatDateTime(value) {
+        if (!value) {
+            return '-';
         }
 
-        function getErrorMessage(error) {
-            return error?.message || 'Terjadi kesalahan.';
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
         }
 
-        function escapeHtml(value) {
-            return String(value)
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#039;');
+        return date.toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    }
+
+    function getInitials(name) {
+        return String(name || 'J')
+            .trim()
+            .split(/\s+/)
+            .slice(0, 2)
+            .map(function (word) {
+                return word.charAt(0).toUpperCase();
+            })
+            .join('');
+    }
+
+    function getErrorMessage(error, fallback = 'Terjadi kesalahan.') {
+        if (typeof error === 'string') {
+            return error;
         }
-    </script>
+
+        if (error?.message) {
+            return error.message;
+        }
+
+        return fallback;
+    }
+
+    function setText(id, value) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = value ?? '-';
+        }
+    }
+
+    function setHtml(id, value) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.innerHTML = value;
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '-')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+</script>
 @endpush

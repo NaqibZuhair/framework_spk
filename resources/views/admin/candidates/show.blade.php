@@ -257,7 +257,7 @@
         </div>
     </div>
 
-    <div id="acceptModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900 bg-opacity-50 px-4">
+    <div id="acceptModal" class="fixed inset-0 z-50 hidden items-center justify-center backdrop-blur-sm bg-opacity-50 px-4">
         <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
             <div class="border-b border-slate-200 px-6 py-4">
                 <h3 class="text-lg font-extrabold text-slate-900">
@@ -301,7 +301,7 @@
         </div>
     </div>
 
-    <div id="rejectModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900 bg-opacity-50 px-4">
+    <div id="rejectModal" class="fixed inset-0 z-50 hidden items-center justify-center backdrop-blur-sm bg-opacity-50 px-4">
         <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
             <div class="border-b border-slate-200 px-6 py-4">
                 <h3 class="text-lg font-extrabold text-slate-900">
