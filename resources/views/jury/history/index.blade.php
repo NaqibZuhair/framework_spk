@@ -247,7 +247,7 @@
                             href="/jury/history/${item.candidate_id}?period_id=${getPeriodId()}"
                             class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
                         >
-                            Lihat Detail
+                            Detail
                         </a>
                     </td>
                 </tr>

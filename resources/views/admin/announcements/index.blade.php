@@ -136,10 +136,10 @@
     </section>
 
     {{-- Modal Warning Kesiapan --}}
-    <div id="readinessModal" class="fixed inset-0 z-[90] hidden">
+    <div id="readinessModal" class="fixed inset-0 z-90 hidden">
         <div class="absolute inset-0 bg-slate-900/60" onclick="closeReadinessModal()"></div>
 
-        <div class="relative z-[91] flex h-screen items-center justify-center p-6">
+        <div class="relative z-91 flex h-screen items-center justify-center p-6">
             <div
                 class="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
                 style="height: calc(100vh - 48px);"
@@ -188,10 +188,10 @@
     </div>
 
     {{-- Modal Batalkan Publikasi --}}
-    <div id="unpublishModal" class="fixed inset-0 z-[90] hidden">
+    <div id="unpublishModal" class="fixed inset-0 z-90 hidden">
         <div class="absolute inset-0 bg-slate-900/50" onclick="closeUnpublishModal()"></div>
 
-        <div class="relative z-[91] flex min-h-screen items-center justify-center p-4">
+        <div class="relative z-91 flex min-h-screen items-center justify-center p-4">
             <div class="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl">
                 <div class="border-b border-slate-200 px-5 py-4">
                     <h2 class="text-lg font-extrabold text-slate-900">

@@ -3,42 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pemilihan Duta Kampus</title>
+    <title>Pemilihan Duta PNJ</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased">
 
-    {{-- NAVBAR --}}
-    <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-            <a href="#" class="text-xl font-bold tracking-tight text-blue-900">
-                Duta Kampus
-            </a>
-
-            <div class="hidden items-center gap-10 text-sm font-medium text-slate-600 md:flex">
-                <a href="#beranda" class="border-b-2 border-blue-900 pb-1 text-blue-900">Beranda</a>
-                <a href="#persyaratan" class="hover:text-blue-900">Persyaratan</a>
-                <a href="#jadwal" class="hover:text-blue-900">Jadwal</a>
-                <a href="{{ route('public.results') }}" class="hover:text-blue-900">Pengumuman</a>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <a href="{{ route('login') }}" class="hidden text-sm font-semibold text-blue-900 sm:inline">
-                    Login
-                </a>
-
-                <a href="{{ route('registration') }}"
-                class="rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800">
-                    Daftar
-                </a>
-            </div>
-        </nav>
-    </header>
+    @include('partials.public-navbar', ['active' => 'home'])
 
     {{-- HERO --}}
-    <section id="beranda" class="bg-gradient-to-br from-slate-50 to-slate-100">
+    <section id="beranda" class="bg-linear-to-br from-slate-50 to-slate-100">
         <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:px-8 lg:py-24">
             <div>
                 <span class="inline-flex rounded-full bg-yellow-300 px-4 py-1.5 text-sm font-semibold text-yellow-900">
@@ -46,7 +21,7 @@
                 </span>
 
                 <h1 class="mt-6 max-w-2xl text-4xl font-extrabold leading-tight tracking-tight text-blue-900 md:text-5xl">
-                    Wujudkan Representasi Terbaik dalam Pemilihan Duta Kampus
+                    Wujudkan Representasi Terbaik dalam Pemilihan Duta PNJ
                 </h1>
 
                 <p class="mt-6 max-w-xl text-base leading-8 text-slate-600 md:text-lg">
@@ -67,8 +42,8 @@
 
                 <div class="relative overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-200">
                     <img src="{{ asset('images/duta-hero.jpg') }}"
-                         alt="Finalis Duta Kampus"
-                         class="h-[260px] w-full object-cover md:h-[360px]">
+                         alt="Finalis Duta PNJ"
+                         class="h-65 w-full object-cover md:h-90">
                 </div>
             </div>
         </div>
@@ -241,7 +216,7 @@
                         ['MEI', '15-30', 'Pendaftaran Online', 'Pengisian formulir dan unggah dokumen administrasi.', true],
                         ['JUNI', '05', 'Pengumuman Lolos Berkas', 'Hasil verifikasi administrasi pendaftar.', false],
                         ['JUNI', '10', 'Wawancara dan Uji Bakat', 'Seleksi mendalam oleh juri kampus.', false],
-                        ['JULI', '01', 'Malam Inagurasi', 'Penetapan Duta Kampus terpilih.', false],
+                        ['JULI', '01', 'Malam Inagurasi', 'Penetapan Duta PNJ terpilih.', false],
                     ];
                 @endphp
 
@@ -279,7 +254,7 @@
                         <span class="transition group-open:rotate-180">⌄</span>
                     </summary>
                     <p class="mt-4 text-sm leading-6 text-slate-600">
-                        Tidak. Pendaftaran Pemilihan Duta Kampus tidak dipungut biaya.
+                        Tidak. Pendaftaran Pemilihan Duta PNJ tidak dipungut biaya.
                     </p>
                 </details>
 
@@ -359,53 +334,7 @@
         </div>
     </section>
 
-    {{-- FOOTER --}}
-    <footer class="border-t border-slate-200 bg-slate-100">
-        <div class="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-3 lg:px-8">
-            <div>
-                <h2 class="text-xl font-bold text-blue-900">Duta Kampus</h2>
-                <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600">
-                    Menjadi ikon keunggulan akademik dan non-akademik di lingkungan kampus.
-                </p>
-
-                <div class="mt-6 flex gap-3">
-                    <a href="#" class="flex h-9 w-9 items-center justify-center rounded-full bg-white text-blue-900 shadow-sm">
-                        🌐
-                    </a>
-                    <a href="#" class="flex h-9 w-9 items-center justify-center rounded-full bg-white text-blue-900 shadow-sm">
-                        ↗
-                    </a>
-                </div>
-            </div>
-
-            <div class="md:col-start-3 grid grid-cols-2 gap-8 text-sm">
-                <div>
-                    <h3 class="font-bold text-yellow-700">Menu Seleksi</h3>
-                    <ul class="mt-4 space-y-3 text-slate-600">
-                        <li><a href="#" class="hover:text-blue-900">Kontak Panitia</a></li>
-                        <li><a href="#" class="hover:text-blue-900">Panduan Seleksi</a></li>
-                        <li><a href="#" class="hover:text-blue-900">Kebijakan Privasi</a></li>
-                        <li><a href="#" class="hover:text-blue-900">Pusat Bantuan</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 class="font-bold text-yellow-700">Tautan Terkait</h3>
-                    <ul class="mt-4 space-y-3 text-slate-600">
-                        <li><a href="#" class="hover:text-blue-900">Website Kampus</a></li>
-                        <li><a href="#" class="hover:text-blue-900">Portal Mahasiswa</a></li>
-                        <li><a href="#" class="hover:text-blue-900">Katalog UKM</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="border-t border-slate-200 px-6 py-5">
-            <p class="mx-auto max-w-7xl text-sm text-slate-500">
-                © {{ date('Y') }} Panitia Pemilihan Duta Kampus. Seluruh Hak Cipta Dilindungi.
-            </p>
-        </div>
-    </footer>
+    @include('partials.public-footer')
 
 </body>
 </html>

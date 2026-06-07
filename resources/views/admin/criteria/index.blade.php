@@ -133,7 +133,7 @@
     </section>
 
     {{-- Modal Warning --}}
-    <div id="warningModal" class="fixed inset-0 z-[90] hidden">
+    <div id="warningModal" class="fixed inset-0 z-90 hidden">
         <div class="absolute inset-0 bg-slate-900/50"></div>
 
         <div class="relative mx-auto mt-28 w-[92%] max-w-md">

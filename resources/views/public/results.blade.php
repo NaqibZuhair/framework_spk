@@ -7,26 +7,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-900">
-    <header class="border-b border-slate-200 bg-white">
-        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <a href="{{ url('/') }}" class="text-xl font-extrabold text-[#00288E]">
-                Duta PNJ
-            </a>
-
-            <nav class="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex">
-                <a href="{{ url('/') }}" class="hover:text-[#00288E]">Beranda</a>
-                <a href="{{ url('/registration') }}" class="hover:text-[#00288E]">Pendaftaran</a>
-                <a href="{{ route('public.results') }}" class="text-[#00288E]">Pengumuman</a>
-            </nav>
-
-            <a
-                href="{{ url('/login') }}"
-                class="rounded-md bg-[#00288E] px-4 py-2 text-sm font-bold text-white hover:bg-[#001F73]"
-            >
-                Login
-            </a>
-        </div>
-    </header>
+    @include('partials.public-navbar', ['active' => 'results'])
 
     <main class="mx-auto max-w-6xl px-6 py-10">
         <section class="text-center">
@@ -172,22 +153,7 @@
         </section>
     </main>
 
-    <footer class="mt-12 border-t border-slate-200 bg-white">
-        <div class="mx-auto max-w-6xl px-6 py-8">
-            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <p class="text-lg font-extrabold text-[#00288E]">Duta PNJ</p>
-                    <p class="mt-1 text-sm text-slate-500">
-                        Sistem Seleksi Mahasiswa Politeknik Negeri Jakarta.
-                    </p>
-                </div>
-
-                <p class="text-sm text-slate-500">
-                    © 2026 Panitia Pemilihan Duta PNJ.
-                </p>
-            </div>
-        </div>
-    </footer>
+    @include('partials.public-footer')
 
     <script>
         const SELECTED_LIMIT = 18;

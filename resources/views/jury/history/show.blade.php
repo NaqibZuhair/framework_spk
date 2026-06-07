@@ -73,25 +73,79 @@
         </section>
 
         <x-card>
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-4">
-                <div>
-                    <p class="text-xs font-bold uppercase text-slate-500">NIM</p>
-                    <p id="studentNumber" class="mt-1 text-base font-semibold text-slate-700">-</p>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div class="flex items-start gap-3 rounded-xl bg-slate-50 px-4 py-4">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-900">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                            <path d="M7 4H17V20H7V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M9 8H15M9 12H15M9 16H12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="min-w-0">
+                        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                            NIM
+                        </p>
+
+                        <p id="studentNumber" class="mt-1 truncate text-base font-extrabold text-slate-900">
+                            -
+                        </p>
+                    </div>
                 </div>
 
-                <div>
-                    <p class="text-xs font-bold uppercase text-slate-500">Nomor Pendaftaran</p>
-                    <p id="registrationNumber" class="mt-1 text-base font-semibold text-slate-700">-</p>
+                <div class="flex items-start gap-3 rounded-xl bg-slate-50 px-4 py-4">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-900">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 6H20V18H4V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M8 10H16M8 14H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="min-w-0">
+                        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                            Nomor Pendaftaran
+                        </p>
+
+                        <p id="registrationNumber" class="mt-1 truncate text-base font-extrabold text-slate-900">
+                            -
+                        </p>
+                    </div>
                 </div>
 
-                <div>
-                    <p class="text-xs font-bold uppercase text-slate-500">Program Studi</p>
-                    <p id="studyProgram" class="mt-1 text-base font-semibold text-slate-700">-</p>
+                <div class="flex items-start gap-3 rounded-xl bg-slate-50 px-4 py-4">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-900">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 4L21 8.5L12 13L3 8.5L12 4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M6 11V16C6 17.7 8.7 19 12 19C15.3 19 18 17.7 18 16V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="min-w-0">
+                        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                            Program Studi
+                        </p>
+
+                        <p id="studyProgram" class="mt-1 truncate text-base font-extrabold text-slate-900">
+                            -
+                        </p>
+                    </div>
                 </div>
 
-                <div>
-                    <p class="text-xs font-bold uppercase text-slate-500">Status Peserta</p>
-                    <div id="candidateStatus" class="mt-2"></div>
+                <div class="flex items-start gap-3 rounded-xl bg-slate-50 px-4 py-4">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-900">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 3L20 7V12C20 17 16.5 20.2 12 21C7.5 20.2 4 17 4 12V7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M9 12L11 14L15.5 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="min-w-0">
+                        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                            Status Peserta
+                        </p>
+
+                        <div id="candidateStatus" class="mt-2"></div>
+                    </div>
                 </div>
             </div>
         </x-card>

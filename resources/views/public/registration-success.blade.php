@@ -10,36 +10,11 @@
 
 <body class="min-h-screen bg-[#F5F7FB] text-slate-900">
 
-    <!-- Navbar -->
-    {{-- <header class="border-b border-slate-200 bg-white">
-        <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
-            <a href="{{ url('/') }}" class="text-[22px] font-extrabold text-[#00288E]">
-                Duta PNJ
-            </a>
-
-            <nav class="hidden items-center gap-8 text-sm font-medium text-slate-700 md:flex">
-                <a href="{{ url('/') }}" class="hover:text-[#00288E]">Beranda</a>
-                <a href="{{ url('/#persyaratan') }}" class="hover:text-[#00288E]">Persyaratan</a>
-                <a href="{{ url('/#jadwal') }}" class="hover:text-[#00288E]">Jadwal</a>
-                <a href="{{ url('/#pengumuman') }}" class="hover:text-[#00288E]">Pengumuman</a>
-            </nav>
-
-            <div class="flex items-center gap-3">
-                <a href="{{ url('/login') }}" class="text-sm font-semibold text-[#00288E] hover:underline">
-                    Login
-                </a>
-
-                <a href="{{ url('/registration') }}"
-                   class="rounded-md bg-[#00288E] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#001F73]">
-                    Daftar
-                </a>
-            </div>
-        </div>
-    </header> --}}
+    @include('partials.public-navbar', ['active' => 'registration'])
 
     <!-- Main Content -->
-    <main class="mx-auto flex min-h-[760px] max-w-7xl items-center justify-center px-6 py-12 lg:px-10">
-        <section class="w-full max-w-[570px] rounded-xl border border-slate-300 bg-white px-12 py-14 text-center shadow-sm">
+    <main class="mx-auto flex min-h-190 max-w-7xl items-center justify-center px-6 py-12 lg:px-10">
+        <section class="w-full max-w-142.5 rounded-xl border border-slate-300 bg-white px-12 py-14 text-center shadow-sm">
 
             <!-- Icon Success -->
             <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-indigo-100">
@@ -64,13 +39,13 @@
                 Terima kasih telah mendaftar sebagai Calon Duta PNJ.
             </p>
 
-            <p class="mx-auto mt-5 max-w-[430px] text-[15px] leading-7 text-slate-600">
+            <p class="mx-auto mt-5 max-w-107.5 text-[15px] leading-7 text-slate-600">
                 Data Anda telah kami terima dan akan segera diverifikasi oleh tim administrasi.
                 Hasil seleksi administrasi akan dikirimkan melalui alamat email yang Anda daftarkan.
             </p>
 
             <!-- Status Box -->
-            <div class="mx-auto mt-10 flex max-w-[470px] items-center gap-4 rounded-md bg-slate-100 px-7 py-5 text-left">
+            <div class="mx-auto mt-10 flex max-w-117.5 items-center gap-4 rounded-md bg-slate-100 px-7 py-5 text-left">
                 <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-yellow-500 text-white">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none">
                         <path
@@ -99,7 +74,7 @@
             </div>
 
             <!-- Optional Registration Number -->
-            <div id="registrationBox" class="mx-auto mt-5 hidden max-w-[470px] rounded-md border border-slate-200 bg-white px-7 py-4 text-left">
+            <div id="registrationBox" class="mx-auto mt-5 hidden max-w-117.5 rounded-md border border-slate-200 bg-white px-7 py-4 text-left">
                 <p class="text-sm font-bold text-slate-500">Nomor Pendaftaran</p>
                 <p id="registrationNumber" class="mt-1 text-xl font-extrabold text-[#00288E]">-</p>
             </div>
@@ -160,67 +135,7 @@
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-300 bg-slate-100">
-        <div class="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 py-12 lg:grid-cols-3 lg:px-10">
-            <div>
-                <h2 class="text-[24px] font-extrabold text-[#00288E]">
-                    Duta PNJ
-                </h2>
-
-                <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600">
-                    Representasi keunggulan akademik, etika, dan talenta mahasiswa
-                    Politeknik Negeri Jakarta dalam memajukan citra institusi.
-                </p>
-
-                <p class="mt-8 text-xs leading-5 text-yellow-700">
-                    © 2024 Panitia Pemilihan Duta PNJ. Seluruh Hak Cipta Dilindungi.
-                </p>
-            </div>
-
-            <div></div>
-
-            <div class="grid grid-cols-2 gap-10 text-sm">
-                <div>
-                    <h3 class="mb-4 font-extrabold text-[#00288E]">
-                        Navigasi
-                    </h3>
-
-                    <ul class="space-y-3 text-slate-700">
-                        <li>
-                            <a href="{{ url('/#kontak') }}" class="hover:text-[#00288E]">
-                                Kontak Panitia
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ url('/#panduan') }}" class="hover:text-[#00288E]">
-                                Panduan Seleksi
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 class="mb-4 font-extrabold text-[#00288E]">
-                        Bantuan
-                    </h3>
-
-                    <ul class="space-y-3 text-slate-700">
-                        <li>
-                            <a href="#" class="hover:text-[#00288E]">
-                                Kebijakan Privasi
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-[#00288E]">
-                                Pusat Bantuan
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
+    @include('partials.public-footer')
 
     <script>
         const params = new URLSearchParams(window.location.search);

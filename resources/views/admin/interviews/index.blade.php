@@ -140,7 +140,7 @@
     </section>
 
     {{-- Modal Hapus --}}
-    <div id="deleteModal" class="fixed inset-0 z-[90] hidden">
+    <div id="deleteModal" class="fixed inset-0 z-90 hidden">
         <div class="absolute inset-0 bg-slate-900/50" onclick="closeDeleteModal()"></div>
 
         <div class="relative mx-auto mt-28 w-[92%] max-w-md">
@@ -176,7 +176,7 @@
     </div>
 
     {{-- Modal Reset Jadwal --}}
-    <div id="resetModal" class="fixed inset-0 z-[90] hidden">
+    <div id="resetModal" class="fixed inset-0 z-90 hidden">
         <div class="absolute inset-0 bg-slate-900/50" onclick="closeResetModal()"></div>
 
         <div class="relative mx-auto mt-28 w-[92%] max-w-md">

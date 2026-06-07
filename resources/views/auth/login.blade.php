@@ -22,12 +22,12 @@
         <header class="h-16 bg-white border-b border-[#D9DEEA]">
             <div class="max-w-6xl mx-auto h-full px-6 flex items-center justify-between">
                 <a href="{{ url('/') }}" class="flex items-center gap-2">
-                    <div class="w-8 h-8 flex items-center justify-center text-[#00288E]">
-                        <svg viewBox="0 0 32 32" class="w-8 h-8" fill="none" aria-hidden="true">
-                            <path d="M16 4L28 10.5V21.5L16 28L4 21.5V10.5L16 4Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-                            <path d="M9.5 12.5L16 16L22.5 12.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M16 16V23" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-                        </svg>
+                    <div class="w-10 h-10 flex items-center justify-center text-[#00288E]">
+                        <img
+                            src="{{ asset('images/LOGO DUTA.png') }}"
+                            alt="Logo Duta PNJ"
+                            class="w-10 h-10 object-contain"
+                        >
                     </div>
 
                     <span class="text-[24px] font-bold tracking-[-0.03em] text-[#00288E]">

@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class JuryScoringController extends Controller
@@ -205,6 +206,74 @@ class JuryScoringController extends Controller
             $periodId = (int) $request->period_id;
             $candidateId = (int) $candidate;
 
+            $candidateColumns = Schema::getColumnListing('candidates');
+
+            $selectColumns = [
+                'candidates.id',
+                'candidates.registration_number',
+                'candidates.full_name',
+                'candidates.student_number',
+                'candidates.study_program',
+                'candidates.status',
+                'interviews.scheduled_at',
+                'interviews.location',
+                'interviews.status as interview_status',
+            ];
+
+            $optionalColumns = [
+                'faculty',
+                'department',
+                'semester',
+                'email',
+                'phone',
+                'whatsapp_number',
+                'vision',
+                'mission',
+
+                'photo_file',
+                'photo_path',
+                'photo_url',
+                'profile_photo',
+                'profile_photo_path',
+                'photo',
+
+                'cv_file',
+                'cv_path',
+                'cv_url',
+                'curriculum_vitae',
+                'curriculum_vitae_file',
+
+                'portfolio_file',
+                'portfolio_path',
+                'portfolio_url',
+                'portfolio',
+
+                'certificate_file',
+                'certificate_path',
+                'certificate_url',
+                'achievement_file',
+                'achievement_document',
+                'achievement_url',
+
+                'student_card_file',
+                'student_card_path',
+                'student_card_url',
+                'ktm_file',
+                'ktm_path',
+
+                'supporting_file',
+                'supporting_path',
+                'supporting_document',
+                'document_file',
+                'document_path',
+            ];
+
+            foreach ($optionalColumns as $column) {
+                if (in_array($column, $candidateColumns, true)) {
+                    $selectColumns[] = "candidates.{$column}";
+                }
+            }
+
             $candidateData = DB::table('candidates')
                 ->leftJoin('interviews', function ($join) use ($periodId) {
                     $join->on('candidates.id', '=', 'interviews.candidate_id')
@@ -213,24 +282,20 @@ class JuryScoringController extends Controller
                 ->where('candidates.id', $candidateId)
                 ->where('candidates.period_id', $periodId)
                 ->whereNotIn('candidates.status', ['pending', 'invalid'])
-                ->first([
-                    'candidates.id',
-                    'candidates.registration_number',
-                    'candidates.full_name',
-                    'candidates.student_number',
-                    'candidates.study_program',
-                    'candidates.status',
-                    'interviews.scheduled_at',
-                    'interviews.location',
-                    'interviews.status as interview_status',
-                ]);
+                ->first($selectColumns);
 
             if (!$candidateData) {
-                return $this->error('Peserta tidak ditemukan atau belum dapat dinilai.', 404);
+                return $this->error('Data calon peserta tidak ditemukan atau belum dapat dinilai.', 404);
             }
 
             $criteria = DB::table('jury_criteria')
                 ->join('criteria', 'jury_criteria.criterion_id', '=', 'criteria.id')
+                ->leftJoin('scores', function ($join) use ($periodId, $candidateId, $userId) {
+                    $join->on('scores.criterion_id', '=', 'criteria.id')
+                        ->where('scores.period_id', '=', $periodId)
+                        ->where('scores.candidate_id', '=', $candidateId)
+                        ->where('scores.user_id', '=', $userId);
+                })
                 ->where('jury_criteria.user_id', $userId)
                 ->where('jury_criteria.period_id', $periodId)
                 ->where('criteria.is_active', true)
@@ -243,65 +308,40 @@ class JuryScoringController extends Controller
                     'criteria.type',
                     'criteria.min_score',
                     'criteria.max_score',
+                    'scores.score',
                 ]);
 
-            if ($criteria->isEmpty()) {
-                return $this->error('Belum ada kriteria yang ditugaskan kepada juri ini.', 422);
-            }
+            $assignedCriteriaCount = $criteria->count();
 
-            $existingScores = DB::table('scores')
-                ->where('period_id', $periodId)
-                ->where('candidate_id', $candidateId)
-                ->where('user_id', $userId)
-                ->get([
-                    'criterion_id',
-                    'score',
-                    'updated_at',
-                ]);
+            $scoredCriteriaCount = $criteria
+                ->filter(fn ($item) => $item->score !== null)
+                ->count();
 
-            $scoreMap = [];
+            $averageScore = $criteria
+                ->filter(fn ($item) => $item->score !== null)
+                ->avg('score');
 
-            foreach ($existingScores as $score) {
-                $scoreMap[(int) $score->criterion_id] = [
-                    'score' => (float) $score->score,
-                    'updated_at' => $score->updated_at,
-                ];
-            }
-
-            $criteriaRows = $criteria->map(function ($criterion) use ($scoreMap) {
-                $criterionId = (int) $criterion->id;
-
-                return [
-                    'id' => $criterionId,
-                    'code' => $criterion->code,
-                    'name' => $criterion->name,
-                    'weight' => $criterion->weight,
-                    'type' => $criterion->type,
-                    'min_score' => $criterion->min_score,
-                    'max_score' => $criterion->max_score,
-                    'score' => $scoreMap[$criterionId]['score'] ?? null,
-                    'updated_at' => $scoreMap[$criterionId]['updated_at'] ?? null,
-                ];
-            })->values();
-
-            $filledCount = $criteriaRows->filter(fn ($item) => $item['score'] !== null)->count();
-            $criteriaCount = $criteriaRows->count();
+            $isComplete = $assignedCriteriaCount > 0
+                && $scoredCriteriaCount >= $assignedCriteriaCount;
 
             return $this->success([
                 'period_id' => $periodId,
                 'candidate' => $candidateData,
-                'criteria' => $criteriaRows,
+                'criteria' => $criteria,
                 'summary' => [
-                    'criteria_count' => $criteriaCount,
-                    'filled_count' => $filledCount,
-                    'is_complete' => $criteriaCount > 0 && $filledCount === $criteriaCount,
-                    'completion_percentage' => $criteriaCount > 0
-                        ? round(($filledCount / $criteriaCount) * 100, 2)
+                    'assigned_criteria_count' => $assignedCriteriaCount,
+                    'scored_criteria_count' => $scoredCriteriaCount,
+                    'completion_percentage' => $assignedCriteriaCount > 0
+                        ? round(($scoredCriteriaCount / $assignedCriteriaCount) * 100, 2)
                         : 0,
+                    'average_score' => $averageScore !== null
+                        ? round((float) $averageScore, 2)
+                        : null,
+                    'is_complete' => $isComplete,
                 ],
-            ], 'Form penilaian peserta berhasil diambil.');
+            ], 'Detail calon peserta berhasil diambil.');
         } catch (Throwable $e) {
-            return $this->error('Form penilaian peserta gagal diambil.', 500, $e->getMessage());
+            return $this->error('Detail calon peserta gagal diambil.', 500, $e->getMessage());
         }
     }
 

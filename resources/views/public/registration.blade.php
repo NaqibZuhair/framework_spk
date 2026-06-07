@@ -11,34 +11,7 @@
 </head>
 
 <body class="min-h-screen bg-slate-50 text-slate-900">
-    {{-- Navbar --}}
-    <header class="border-b border-slate-200 bg-white">
-        <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
-            <a href="{{ url('/') }}" class="text-2xl font-extrabold tracking-tight text-blue-900">
-                Duta PNJ
-            </a>
-
-            <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
-                <a href="{{ url('/') }}" class="hover:text-blue-900">Beranda</a>
-                <a href="{{ url('/#persyaratan') }}" class="hover:text-blue-900">Persyaratan</a>
-                <a href="{{ url('/#jadwal') }}" class="hover:text-blue-900">Jadwal</a>
-                <a href="{{ url('/pengumuman') }}" class="hover:text-blue-900">Pengumuman</a>
-            </nav>
-
-            <div class="flex items-center gap-3">
-                <a href="{{ route('login') }}" class="text-sm font-bold text-blue-900 hover:underline">
-                    Login
-                </a>
-
-                <a
-                    href="{{ route('registration') }}"
-                    class="rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-800"
-                >
-                    Daftar
-                </a>
-            </div>
-        </div>
-    </header>
+    @include('partials.public-navbar', ['active' => 'registration'])
 
     {{-- Main --}}
     <main class="mx-auto max-w-7xl px-6 py-10 lg:px-10">
@@ -340,47 +313,7 @@
         </form>
     </main>
 
-    {{-- Footer --}}
-    <footer class="mt-10 border-t border-slate-200 bg-white">
-        <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-10 lg:grid-cols-3 lg:px-10">
-            <div>
-                <h2 class="text-2xl font-extrabold text-blue-900">
-                    Duta PNJ
-                </h2>
-
-                <p class="mt-3 text-sm leading-6 text-slate-500">
-                    Wadah representasi mahasiswa terbaik Politeknik Negeri Jakarta untuk berkontribusi
-                    pada institusi dan masyarakat.
-                </p>
-            </div>
-
-            <div>
-                <h3 class="text-sm font-extrabold uppercase tracking-wide text-slate-800">
-                    Tautan Penting
-                </h3>
-
-                <div class="mt-4 space-y-2 text-sm font-semibold text-slate-500">
-                    <a href="{{ url('/#persyaratan') }}" class="block hover:text-blue-900">Panduan Seleksi</a>
-                    <a href="{{ url('/#kontak') }}" class="block hover:text-blue-900">Kontak Panitia</a>
-                </div>
-            </div>
-
-            <div>
-                <h3 class="text-sm font-extrabold uppercase tracking-wide text-slate-800">
-                    Bantuan
-                </h3>
-
-                <div class="mt-4 space-y-2 text-sm font-semibold text-slate-500">
-                    <p>Kebijakan Privasi</p>
-                    <p>Pusat Bantuan</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="border-t border-slate-200 px-6 py-4 text-center text-sm text-slate-500">
-            © {{ date('Y') }} Panitia Pemilihan Duta PNJ. Seluruh Hak Cipta Dilindungi.
-        </div>
-    </footer>
+    @include('partials.public-footer')
 
     <script>
         const registrationForm = document.getElementById('registrationForm');
