@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Formulir Pendaftaran Duta PNJ</title>
+    @include('partials.app-icon')
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

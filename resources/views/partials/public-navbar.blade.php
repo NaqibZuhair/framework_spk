@@ -30,7 +30,7 @@
         <a href="{{ url('/') }}" class="flex items-center gap-3">
             <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-900">
                 <img
-                    src="{{ asset('images/LOGO DUTA.png') }}"
+                    src="{{ asset('images/logo-duta.png') }}"
                     alt="Logo Duta PNJ"
                     class="h-8 w-8 object-contain"
                 >
