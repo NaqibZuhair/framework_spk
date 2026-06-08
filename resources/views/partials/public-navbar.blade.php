@@ -41,7 +41,7 @@
                     Duta PNJ
                 </p>
                 <p class="text-xs font-semibold text-slate-500">
-                    Sistem Seleksi Mahasiswa
+                    Sistem Pemilihan Duta PNJ
                 </p>
             </div>
         </a>

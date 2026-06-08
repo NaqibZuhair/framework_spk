@@ -159,9 +159,9 @@
                     </p>
                 </div>
 
-                <a href="#panduan" class="text-sm font-semibold text-blue-900 hover:underline">
+                {{-- <a href="#panduan" class="text-sm font-semibold text-blue-900 hover:underline">
                     Syarat Lengkap (PDF)
-                </a>
+                </a> --}}
             </div>
 
             <div class="mt-10 grid gap-6 md:grid-cols-2">
@@ -407,21 +407,30 @@
                 <div class="rounded-xl bg-white p-6 text-slate-900">
                     <h3 class="font-bold">Kirim Pesan Cepat</h3>
 
-                    <form class="mt-5 space-y-4">
-                        <input type="text"
-                               placeholder="Nama Lengkap"
-                               class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-100">
+                    <form method="GET" action="{{ route('home') }}" class="mt-5 space-y-4">
+                        <input
+                            type="text"
+                            placeholder="Nama Lengkap"
+                            required
+                            class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-100">
 
-                        <input type="email"
-                               placeholder="Email Mahasiswa"
-                               class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-100">
+                        <input
+                            type="email"
+                            placeholder="Email Mahasiswa"
+                            required
+                            inputmode="email"
+                            autocomplete="email"
+                            class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-100">
 
-                        <textarea rows="4"
-                                  placeholder="Pesan Anda"
-                                  class="w-full resize-none rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-100"></textarea>
+                        <textarea
+                            rows="4"
+                            placeholder="Pesan Anda"
+                            required
+                            class="w-full resize-none rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-100"></textarea>
 
-                        <button type="button"
-                                class="w-full rounded-lg bg-blue-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800">
+                        <button
+                            type="submit"
+                            class="w-full rounded-lg bg-blue-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800">
                             Kirim Pesan
                         </button>
                     </form>
