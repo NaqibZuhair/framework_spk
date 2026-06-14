@@ -46,6 +46,52 @@ class JuryController extends Controller
         return null;
     }
 
+    private function passwordRules(bool $required = true): array
+    {
+        return [
+            $required ? 'required' : 'nullable',
+            'string',
+            'min:8',
+            'confirmed',
+            function ($attribute, $value, $fail) use ($required) {
+                if (!$required && ($value === null || $value === '')) {
+                    return;
+                }
+
+                $missing = [];
+
+                if (!preg_match('/[a-z]/', $value)) {
+                    $missing[] = 'huruf kecil';
+                }
+
+                if (!preg_match('/[A-Z]/', $value)) {
+                    $missing[] = 'huruf besar';
+                }
+
+                if (!preg_match('/[0-9]/', $value)) {
+                    $missing[] = 'angka';
+                }
+
+                if (!preg_match('/[^A-Za-z0-9]/', $value)) {
+                    $missing[] = 'simbol';
+                }
+
+                if (!empty($missing)) {
+                    $fail('Kata sandi harus memiliki ' . implode(', ', $missing) . '. Contoh: DutaPNJ@2026');
+                }
+            },
+        ];
+    }
+
+    private function validationMessages(): array
+    {
+        return [
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.min' => 'Kata sandi minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak sama.',
+        ];
+    }
+
     private function getPeriodId(?int $periodId = null): ?int
     {
         if ($periodId) {
@@ -222,11 +268,11 @@ class JuryController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'email' => ['required', 'email', 'max:150', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'password' => $this->passwordRules(true),
             'is_active' => ['required', 'boolean'],
             'criteria' => ['required', 'array', 'min:1'],
             'criteria.*' => ['required', 'integer', 'distinct', 'exists:criteria,id'],
-        ]);
+        ], $this->validationMessages());
 
         if ($validator->fails()) {
             return $this->error('Validasi gagal.', 422, $validator->errors());
@@ -337,11 +383,11 @@ class JuryController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($jury->id)],
             'phone' => ['nullable', 'string', 'max:30'],
-            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+            'password' => $this->passwordRules(false),
             'is_active' => ['required', 'boolean'],
             'criteria' => ['required', 'array', 'min:1'],
             'criteria.*' => ['required', 'integer', 'distinct', 'exists:criteria,id'],
-        ]);
+        ], $this->validationMessages());
 
         if ($validator->fails()) {
             return $this->error('Validasi gagal.', 422, $validator->errors());
@@ -434,8 +480,8 @@ class JuryController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
+            'password' => $this->passwordRules(true),
+        ], $this->validationMessages());
 
         if ($validator->fails()) {
             return $this->error('Validasi gagal.', 422, $validator->errors());

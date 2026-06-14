@@ -38,7 +38,7 @@
                     </h2>
 
                     <p class="mt-2 text-sm italic text-slate-500">
-                        Kosongkan kata sandi jika tidak ingin mengubah password akun juri.
+                        Kosongkan kata sandi jika tidak ingin mengubah kata sandi akun juri.
                     </p>
                 </div>
 
@@ -104,13 +104,40 @@
                             Kata Sandi Baru
                         </label>
 
-                        <input
-                            id="password"
-                            type="password"
-                            minlength="6"
-                            placeholder="Kosongkan jika tidak diubah"
-                            class="h-11 w-full rounded-md border border-slate-300 bg-white px-4 text-sm outline-none focus:border-[#00288E] focus:ring-2 focus:ring-blue-100"
-                        >
+                        <div class="relative">
+                            <input
+                                id="password"
+                                type="password"
+                                minlength="8"
+                                autocomplete="new-password"
+                                placeholder="Kosongkan jika tidak diubah"
+                                class="h-11 w-full rounded-md border border-slate-300 bg-white px-4 pr-12 text-sm outline-none focus:border-[#00288E] focus:ring-2 focus:ring-blue-100"
+                            >
+
+                            <button
+                                type="button"
+                                onclick="togglePasswordVisibility('password', this)"
+                                aria-label="Lihat kata sandi baru"
+                                aria-pressed="false"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-[#00288E] focus:outline-none focus:ring-2 focus:ring-blue-100"
+                            >
+                                <span class="sr-only">Lihat kata sandi baru</span>
+
+                                <svg class="icon-eye h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12s-3.75 6.75-9.75 6.75S2.25 12 2.25 12z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+
+                                <svg class="icon-eye-off hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.88 5.25A9.89 9.89 0 0112 5.03c6 0 9.75 6.97 9.75 6.97a18.28 18.28 0 01-3.08 3.95" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.61 6.61C3.85 8.48 2.25 12 2.25 12s3.75 6.75 9.75 6.75a9.92 9.92 0 004.15-.9" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <div>
@@ -118,15 +145,47 @@
                             Konfirmasi Kata Sandi Baru
                         </label>
 
-                        <input
-                            id="password_confirmation"
-                            type="password"
-                            minlength="6"
-                            placeholder="Ulangi kata sandi baru"
-                            class="h-11 w-full rounded-md border border-slate-300 bg-white px-4 text-sm outline-none focus:border-[#00288E] focus:ring-2 focus:ring-blue-100"
-                        >
+                        <div class="relative">
+                            <input
+                                id="password_confirmation"
+                                type="password"
+                                minlength="8"
+                                autocomplete="new-password"
+                                placeholder="Ulangi kata sandi baru"
+                                class="h-11 w-full rounded-md border border-slate-300 bg-white px-4 pr-12 text-sm outline-none focus:border-[#00288E] focus:ring-2 focus:ring-blue-100"
+                            >
+
+                            <button
+                                type="button"
+                                onclick="togglePasswordVisibility('password_confirmation', this)"
+                                aria-label="Lihat konfirmasi kata sandi baru"
+                                aria-pressed="false"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-[#00288E] focus:outline-none focus:ring-2 focus:ring-blue-100"
+                            >
+                                <span class="sr-only">Lihat konfirmasi kata sandi baru</span>
+
+                                <svg class="icon-eye h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12s-3.75 6.75-9.75 6.75S2.25 12 2.25 12z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+
+                                <svg class="icon-eye-off hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.88 5.25A9.89 9.89 0 0112 5.03c6 0 9.75 6.97 9.75 6.97a18.28 18.28 0 01-3.08 3.95" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.61 6.61C3.85 8.48 2.25 12 2.25 12s3.75 6.75 9.75 6.75a9.92 9.92 0 004.15-.9" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                <p class="mt-2 text-xs text-slate-500">
+                    Kosongkan jika tidak ingin mengubah kata sandi. Jika diisi, gunakan minimal 8 karakter dengan huruf besar, huruf kecil, angka, dan simbol.
+                </p>
+
             </x-card>
 
             <x-card>
@@ -635,16 +694,50 @@
                 return 'Email juri wajib diisi.';
             }
 
-            if ((password || passwordConfirmation) && password.length < 6) {
-                return 'Kata sandi baru minimal 6 karakter.';
-            }
+            if (password || passwordConfirmation) {
+                const passwordMessage = getStrongPasswordMessage(password, 'Kata sandi baru');
 
-            if (password !== passwordConfirmation) {
-                return 'Konfirmasi kata sandi baru tidak sama.';
+                if (passwordMessage) {
+                    return passwordMessage;
+                }
+
+                if (password !== passwordConfirmation) {
+                    return 'Kata sandi baru tidak sama.';
+                }
             }
 
             if (!selectedCriteriaIds.length) {
                 return 'Pilih minimal satu kriteria yang akan dinilai oleh juri.';
+            }
+
+            return null;
+        }
+
+        function getStrongPasswordMessage(password, label = 'Kata sandi') {
+            if (password.length < 8) {
+                return `${label} minimal 8 karakter.`;
+            }
+
+            const missing = [];
+
+            if (!/[a-z]/.test(password)) {
+                missing.push('huruf kecil');
+            }
+
+            if (!/[A-Z]/.test(password)) {
+                missing.push('huruf besar');
+            }
+
+            if (!/[0-9]/.test(password)) {
+                missing.push('angka');
+            }
+
+            if (!/[^A-Za-z0-9]/.test(password)) {
+                missing.push('simbol');
+            }
+
+            if (missing.length) {
+                return `${label} harus memiliki ${missing.join(', ')}. Contoh: DutaPNJ@2026`;
             }
 
             return null;
@@ -724,6 +817,32 @@
                 .replaceAll('>', '&gt;')
                 .replaceAll('"', '&quot;')
                 .replaceAll("'", '&#039;');
+        }
+
+        function togglePasswordVisibility(inputId, button) {
+            const input = document.getElementById(inputId);
+
+            if (!input || !button) {
+                return;
+            }
+
+            const iconEye = button.querySelector('.icon-eye');
+            const iconEyeOff = button.querySelector('.icon-eye-off');
+            const label = button.querySelector('.sr-only');
+
+            const isHidden = input.type === 'password';
+
+            input.type = isHidden ? 'text' : 'password';
+
+            iconEye?.classList.toggle('hidden', isHidden);
+            iconEyeOff?.classList.toggle('hidden', !isHidden);
+
+            button.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+            button.setAttribute('aria-label', isHidden ? 'Sembunyikan kata sandi' : 'Lihat kata sandi');
+
+            if (label) {
+                label.textContent = isHidden ? 'Sembunyikan kata sandi' : 'Lihat kata sandi';
+            }
         }
     </script>
 @endpush
