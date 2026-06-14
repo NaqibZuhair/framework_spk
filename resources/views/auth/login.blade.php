@@ -178,9 +178,13 @@
                                             Kata Sandi
                                         </label>
 
-                                        <a href="#" class="text-[14px] font-bold text-[#00288E] hover:underline">
+                                        <button
+                                            type="button"
+                                            onclick="openForgotPasswordModal()"
+                                            class="text-sm font-semibold text-[#00288E] hover:text-blue-700"
+                                        >
                                             Lupa Password?
-                                        </a>
+                                        </button>
                                     </div>
 
                                     <div class="relative">
@@ -277,6 +281,69 @@
         </footer>
     </div>
 
+    <div
+        id="forgotPasswordModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4"
+    >
+        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">
+                        Bantuan Lupa Password
+                    </h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Pilih kondisi akun Anda agar proses pemulihan tetap aman.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onclick="closeForgotPasswordModal()"
+                    class="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                    aria-label="Tutup modal"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <div id="forgotPasswordDefaultInfo" class="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                <p class="text-sm font-semibold text-slate-800">
+                    Apa yang dilakukan saat lupa Password
+                </p>
+                <p class="mt-2 text-sm leading-6 text-slate-600">
+                    Silakan hubungi admin, pengelola sistem, atau panitia untuk melakukan reset kata sandi. Reset password tidak dilakukan otomatis agar keamanan akun tetap terkontrol.
+                </p>
+            </div>
+
+            <div id="AdminInfo" class="mt-4 hidden rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p class="text-sm font-semibold text-slate-800">
+                    Untuk Admin
+                </p>
+                <p class="mt-2 text-sm leading-6 text-slate-600">
+                    Pemulihan akun admin dilakukan melalui prosedur internal setelah verifikasi identitas. Hubungi penanggung jawab aplikasi atau pengelola server untuk proses reset manual.
+                </p>
+            </div>
+
+            <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                    type="button"
+                    onclick="showAdminInfo()"
+                    class="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                    Saya Admin
+                </button>
+
+                <button
+                    type="button"
+                    onclick="closeForgotPasswordModal()"
+                    class="rounded-md bg-[#00288E] px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+                >
+                    Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function togglePassword() {
             const input = document.getElementById('password');
@@ -286,6 +353,43 @@
             }
 
             input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            const AdminInfo = document.getElementById('AdminInfo');
+
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (AdminInfo) {
+                AdminInfo.classList.add('hidden');
+            }
+        }
+
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function showAdminInfo() {
+            const AdminInfo = document.getElementById('AdminInfo');
+
+            if (!AdminInfo) {
+                return;
+            }
+
+            AdminInfo.classList.remove('hidden');
         }
     </script>
 
@@ -300,7 +404,7 @@
                 if (remainingSeconds <= 0) {
                     clearInterval(countdown);
                     loginButton.disabled = false;
-                    loginButton.textContent = 'Masuk';
+                    loginButton.textContent = 'Masuk Ke Dashboard';
                     return;
                 }
 
