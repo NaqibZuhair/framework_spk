@@ -46,7 +46,12 @@ class CandidateController extends Controller
         }
 
         $validated = $request->validate([
-            'full_name' => ['required', 'string', 'max:150'],
+            'full_name' => [
+                'required',
+                'string',
+                'max:150',
+                'regex:/^[\pL\s.\'-]+$/u',
+            ],
             'student_number' => [
                 'required',
                 'string',
@@ -63,6 +68,8 @@ class CandidateController extends Controller
             'mission' => ['nullable', 'string'],
             'photo_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'cv_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+        ], [
+            'full_name.regex' => 'Nama hanya boleh berisi huruf, spasi, titik, apostrof, dan tanda hubung.',
         ]);
 
         $photoPath = null;
@@ -202,7 +209,13 @@ class CandidateController extends Controller
         }
 
         $validated = $request->validate([
-            'full_name' => ['sometimes', 'required', 'string', 'max:150'],
+            'full_name' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:150',
+                'regex:/^[\pL\s.\'-]+$/u',
+            ],
             'student_number' => [
                 'sometimes',
                 'required',
@@ -221,6 +234,8 @@ class CandidateController extends Controller
             'mission' => ['nullable', 'string'],
             'photo_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'cv_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+        ], [
+            'full_name.regex' => 'Nama hanya boleh berisi huruf, spasi, titik, apostrof, dan tanda hubung.',
         ]);
 
         $oldPhoto = $candidate->photo_file;

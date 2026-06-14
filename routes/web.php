@@ -38,7 +38,9 @@ Route::get('/registration-success', function () {
 })->name('registration.success');
 
 Route::get('/login', [WebLoginController::class, 'create'])->name('login');
-Route::post('/login', [WebLoginController::class, 'store'])->name('login.store');
+Route::post('/login', [WebLoginController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('login.store');
 
 Route::post('/logout', [WebLoginController::class, 'destroy'])
     ->middleware('auth')

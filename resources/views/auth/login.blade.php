@@ -139,6 +139,9 @@
                                 </div>
                             @endif
 
+                            @php
+                                $loginThrottleSeconds = (int) session('login_throttle_seconds', 0);
+                            @endphp
                             <form id="loginForm" method="POST" action="{{ route('login.store') }}" class="space-y-6">
                                 @csrf
 
@@ -216,15 +219,22 @@
                                 <button
                                     id="loginButton"
                                     type="submit"
+                                    @if ($loginThrottleSeconds > 0) disabled @endif
                                     class="w-full h-13.25 rounded-lg bg-[#00288E] text-white text-[15px] font-bold hover:bg-[#001F73] transition flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
-                                    <span id="loginButtonText">Masuk Ke Dashboard</span>
+                                    @if ($loginThrottleSeconds > 0)
+                                        Tunggu {{ $loginThrottleSeconds }} detik
+                                    @else
+                                        <span id="loginButtonText">Masuk Ke Dashboard</span>
 
-                                    <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" aria-hidden="true">
-                                        <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <path d="M13 6L19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
+                                        <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" aria-hidden="true">
+                                            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                            <path d="M13 6L19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    @endif
                                 </button>
+
+                                
                             </form>
 
                             <div class="mt-16 rounded-lg bg-[#F1F3F7] border-l-4 border-[#8A6400] px-5 py-4">
@@ -278,5 +288,25 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         }
     </script>
+
+    @if ($loginThrottleSeconds > 0)
+        <script>
+            let remainingSeconds = {{ $loginThrottleSeconds }};
+            const loginButton = document.getElementById('loginButton');
+
+            const countdown = setInterval(() => {
+                remainingSeconds--;
+
+                if (remainingSeconds <= 0) {
+                    clearInterval(countdown);
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Masuk';
+                    return;
+                }
+
+                loginButton.textContent = `Tunggu ${remainingSeconds} detik`;
+            }, 1000);
+        </script>
+    @endif
 </body>
 </html>

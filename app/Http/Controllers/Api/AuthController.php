@@ -15,7 +15,11 @@ class AuthController extends Controller
         $validated = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
-        ]);
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password wajib diisi.',
+        ]); 
 
         $user = User::where('email', $validated['email'])->first();
 

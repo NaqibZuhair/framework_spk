@@ -16,9 +16,11 @@ use App\Http\Controllers\Api\JuryDashboardController;
 use App\Http\Controllers\Api\JuryScoringController;
 
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:10,1');
 
-Route::post('/candidates/register', [CandidateController::class, 'register']);
+Route::post('/candidates/register', [CandidateController::class, 'register'])
+    ->middleware('throttle:5,1');
 
 Route::get('/public/results', [AnnouncementController::class, 'publicResults']);
 
