@@ -46,31 +46,96 @@ class CandidateController extends Controller
         }
 
         $validated = $request->validate([
-            'full_name' => [
-                'required',
-                'string',
-                'max:150',
-                'regex:/^[\pL\s.\'-]+$/u',
-            ],
-            'student_number' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('candidates', 'student_number')
-                    ->where('period_id', $period->id),
-            ],
-            'email' => ['required', 'email', 'max:150'],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'faculty' => ['nullable', 'string', 'max:150'],
-            'study_program' => ['nullable', 'string', 'max:150'],
-            'semester' => ['nullable', 'integer', 'min:1', 'max:14'],
-            'vision' => ['nullable', 'string'],
-            'mission' => ['nullable', 'string'],
-            'photo_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'cv_file' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
-        ], [
-            'full_name.regex' => 'Nama hanya boleh berisi huruf, spasi, titik, apostrof, dan tanda hubung.',
-        ]);
+    'full_name' => [
+        'required',
+        'string',
+        'max:150',
+        'regex:/^[\pL\s.\'-]+$/u',
+        $this->rejectSqlInjectionPattern('Nama'),
+    ],
+
+    'student_number' => [
+        'required',
+        'string',
+        'max:50',
+        'regex:/^[0-9]+$/',
+        Rule::unique('candidates', 'student_number')
+            ->where('period_id', $period->id),
+        $this->rejectSqlInjectionPattern('NIM'),
+    ],
+
+    'email' => [
+        'required',
+        'email',
+        'max:150',
+        $this->rejectSqlInjectionPattern('Email'),
+    ],
+
+    'phone' => [
+        'nullable',
+        'string',
+        'max:30',
+        'regex:/^[0-9+\-\s().]+$/',
+        $this->rejectSqlInjectionPattern('Nomor HP'),
+    ],
+
+    'faculty' => [
+        'nullable',
+        'string',
+        'max:150',
+        'regex:/^[\pL\s.\'&-]+$/u',
+        $this->rejectSqlInjectionPattern('Jurusan'),
+    ],
+
+    'study_program' => [
+        'nullable',
+        'string',
+        'max:150',
+        'regex:/^[\pL\s.\'&-]+$/u',
+        $this->rejectSqlInjectionPattern('Program studi'),
+    ],
+
+    'semester' => [
+        'nullable',
+        'integer',
+        'min:1',
+        'max:14',
+    ],
+
+    'vision' => [
+        'nullable',
+        'string',
+        'max:2000',
+        $this->rejectSqlInjectionPattern('Visi'),
+    ],
+
+    'mission' => [
+        'nullable',
+        'string',
+        'max:2000',
+        $this->rejectSqlInjectionPattern('Misi'),
+    ],
+
+    'photo_file' => [
+        'nullable',
+        'image',
+        'mimes:jpg,jpeg,png,webp',
+        'max:2048',
+    ],
+
+    'cv_file' => [
+        'nullable',
+        'file',
+        'mimes:pdf,doc,docx',
+        'max:5120',
+    ],
+], [
+    'full_name.regex' => 'Nama hanya boleh berisi huruf, spasi, titik, apostrof, dan tanda hubung.',
+    'student_number.regex' => 'NIM hanya boleh berisi angka.',
+    'phone.regex' => 'Nomor HP hanya boleh berisi angka, spasi, tanda +, tanda -, titik, dan kurung.',
+    'faculty.regex' => 'Jurusan hanya boleh berisi huruf, spasi, titik, apostrof, tanda hubung, dan &.',
+    'study_program.regex' => 'Program studi hanya boleh berisi huruf, spasi, titik, apostrof, tanda hubung, dan &.',
+]);
 
         $photoPath = null;
         $cvPath = null;
@@ -420,6 +485,30 @@ class CandidateController extends Controller
 
         return 'DK-' . $period->election_year . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
     }
+
+    private function rejectSqlInjectionPattern(string $label): \Closure
+{
+    return function ($attribute, $value, $fail) use ($label) {
+        if (! is_string($value) || trim($value) === '') {
+            return;
+        }
+
+        $patterns = [
+            '/(--|#|\/\*|\*\/)/i',
+            '/;\s*(select|insert|update|delete|drop|alter|truncate|create)\b/i',
+            '/\b(union\s+select|select\s+.+\s+from|insert\s+into|update\s+\w+\s+set|delete\s+from|drop\s+table|alter\s+table|truncate\s+table)\b/i',
+            '/([\'"])\s*(or|and)\s+[\'"]?[\w\s]+[\'"]?\s*=\s*[\'"]?[\w\s]+/i',
+            '/\b(or|and)\b\s+[\'"]?\w+[\'"]?\s*=\s*[\'"]?\w+/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $value)) {
+                $fail($label . ' mengandung pola input yang tidak diizinkan.');
+                return;
+            }
+        }
+    };
+}
 
     private function ensureAdmin(): ?JsonResponse
     {
